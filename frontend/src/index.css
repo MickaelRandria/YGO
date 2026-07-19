@@ -136,11 +136,23 @@ h3 { font-size: 17px; font-weight: 800; }
 .score-hint { margin: 18px 4px; color: var(--muted); font-size: 13px; line-height: 1.5; text-align: center; }
 
 .lp-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.lp-player { min-width: 0; padding: 18px 14px; border-radius: 24px; background: var(--surface-amber); }
+.lp-player { min-width: 0; overflow: hidden; border-radius: 24px; background: var(--surface-amber); }
 .lp-player + .lp-player { background: var(--surface-coral); color: var(--white); }
-.lp-player > span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-.lp-player strong { display: block; margin: 3px 0 8px; color: var(--ink); font-size: clamp(25px, 7.6vw, 34px); font-weight: 800; letter-spacing: -1.8px; }
+.lp-hero { display: grid; min-height: 98px; place-items: end center; padding-top: 11px; }
+.lp-hero-circle { display: grid; width: clamp(78px, 25vw, 112px); height: clamp(78px, 25vw, 112px); place-items: center; border-radius: 50%; background: var(--ink); color: var(--accent-yellow); transition: opacity .32s ease, transform .32s ease; }
+.lp-player.p2 .lp-hero-circle { background: var(--white); color: var(--surface-coral); }
+.lp-hero-circle.pulse { animation: lp-state-pulse .42s ease-out; }
+.lp-hero-circle svg { transition: opacity .32s ease, transform .32s ease; }
+.lp-player.state-critical .lp-hero-circle { color: var(--surface-coral); }
+.lp-player.p2.state-critical .lp-hero-circle { color: var(--ink); }
+.lp-player.state-eliminated .lp-hero-circle { background: #77736B; color: #D4D0C6; }
+.lp-info { padding: 10px 14px 15px; }
+.lp-info > span { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.lp-player strong { display: block; margin: 1px 0 0; color: var(--ink); font-size: clamp(29px, 8.5vw, 38px); font-weight: 800; letter-spacing: -2px; line-height: 1; }
 .lp-player + .lp-player strong { color: var(--white); }
+.lp-state-label { display: block; min-height: 14px; margin-top: 4px; color: rgb(20 20 20 / .62); font-size: 10px; font-weight: 800; }
+.lp-player.p2 .lp-state-label { color: rgb(255 255 255 / .78); }
+@keyframes lp-state-pulse { 0% { transform: scale(1); } 45% { transform: scale(1.08); } 100% { transform: scale(1); } }
 .healthy, .warning { color: var(--ink); }
 .danger { color: #B52F22; }
 .lp-player + .lp-player .danger { color: var(--ink); }
