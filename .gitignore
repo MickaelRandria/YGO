@@ -6,4 +6,5 @@ backend/venv/
 backend/cache/card_names.json
 backend/cache/*.png
 backend/__pycache__/
+backend/debug_output/
 venv/

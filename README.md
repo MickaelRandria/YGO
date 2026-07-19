@@ -75,3 +75,7 @@ Le plan gratuit Render met le service en veille après inactivité. Le premier s
 6. Si la page ne charge pas, le pare-feu bloque probablement les ports entrants 5000 ou 5173. Sous Windows, autorisez Node.js et Python sur les réseaux privés dans Pare-feu Windows Defender → Autoriser une application. Sous macOS, autorisez les connexions entrantes pour Node et Python dans Réglages Système → Sécurité → Pare-feu.
 
 `localhost:5173` continue de fonctionner sur le PC. En local, le backend accepte les origines Vite de votre réseau privé ; sur Render, définissez toujours `ALLOWED_ORIGIN` sur l'URL Vercel pour conserver un CORS strict.
+
+### Diagnostiquer un scan qui échoue
+
+Ouvrez temporairement `http://<IP-DU-PC>:5173/?debugScan=true` sur le téléphone puis relancez le scan. Le backend conservera les images intermédiaires uniquement en local. Ouvrez ensuite `http://<IP-DU-PC>:5000/api/debug/last` pour visualiser l'original, les contours acceptés (vert) et rejetés (rouge), chaque recadrage, la zone envoyée à Tesseract et le texte OCR brut. Les fichiers sont placés dans `backend/debug_output/` et ignorés par Git.

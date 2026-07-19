@@ -1,11 +1,23 @@
-"""OpenCV helpers for extracting one or more Yu-Gi-Oh! cards from a photo."""
+"""OpenCV helpers for extracting Yu-Gi-Oh! cards and inspecting contour filters."""
 from __future__ import annotations
+
+from dataclasses import dataclass
 
 import cv2
 import numpy as np
 
 CARD_RATIO = 0.68  # width / height of a standard Yu-Gi-Oh! card
 MIN_RATIO, MAX_RATIO = 0.52, 0.84
+
+
+@dataclass
+class DetectionInspection:
+    cards: list[np.ndarray]
+    candidates_found: int
+    contours_found: int
+    details: list[dict[str, float | int | str | None]]
+    annotated_image: np.ndarray
+    used_full_frame_fallback: bool
 
 
 def _order_points(points: np.ndarray) -> np.ndarray:
@@ -30,14 +42,10 @@ def _warp_card(image: np.ndarray, points: np.ndarray) -> np.ndarray:
     return cv2.warpPerspective(image, cv2.getPerspectiveTransform(np.array([top_left, top_right, bottom_right, bottom_left]), destination), (width, height))
 
 
-def detect_cards(image: np.ndarray) -> list[np.ndarray]:
-    """Return perspective-corrected cards, ordered from top-left to bottom-right.
-
-    A full-frame image remains a valid single-card fallback when contours are not
-    reliable; this avoids rejecting close-up camera photos.
-    """
+def inspect_card_detection(image: np.ndarray) -> DetectionInspection:
+    """Run the existing detector and retain every decision for debug visualisation."""
     if image is None or image.size == 0:
-        return []
+        return DetectionInspection([], 0, 0, [], image, False)
     height, width = image.shape[:2]
     minimum_area = max(2_500, int(width * height * 0.025))
     scaled = cv2.GaussianBlur(image, (5, 5), 0)
@@ -45,24 +53,55 @@ def detect_cards(image: np.ndarray) -> list[np.ndarray]:
     edges = cv2.Canny(gray, 45, 130)
     edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    annotated = image.copy()
     candidates: list[tuple[float, float, np.ndarray]] = []
-    for contour in contours:
-        if cv2.contourArea(contour) < minimum_area:
-            continue
+    details: list[dict[str, float | int | str | None]] = []
+
+    for contour_index, contour in enumerate(contours):
+        area = float(cv2.contourArea(contour))
         rectangle = cv2.minAreaRect(contour)
         box_width, box_height = rectangle[1]
-        if not box_width or not box_height:
-            continue
-        ratio = min(box_width, box_height) / max(box_width, box_height)
-        if not MIN_RATIO <= ratio <= MAX_RATIO:
+        ratio = min(box_width, box_height) / max(box_width, box_height) if box_width and box_height else None
+        rejected_reason: str | None = None
+        if area < minimum_area:
+            rejected_reason = f'aire trop petite (min attendu: {minimum_area}px)'
+        elif ratio is None:
+            rejected_reason = 'rectangle invalide (largeur ou hauteur nulle)'
+        elif not MIN_RATIO <= ratio <= MAX_RATIO:
+            rejected_reason = f'aspect ratio hors plage (attendu ~{CARD_RATIO}, min {MIN_RATIO}, max {MAX_RATIO})'
+
+        is_candidate = rejected_reason is None
+        color = (0, 180, 0) if is_candidate else (0, 0, 255)
+        cv2.drawContours(annotated, [contour], -1, color, 2)
+        details.append({
+            'contour_index': contour_index,
+            'area': round(area, 2),
+            'aspect_ratio': round(float(ratio), 3) if ratio is not None else None,
+            'rejected_reason': rejected_reason,
+        })
+        if not is_candidate:
             continue
         points = cv2.boxPoints(rectangle)
         center_x, center_y = rectangle[0]
         candidates.append((center_y, center_x, _warp_card(image, points)))
-    if not candidates:
-        return [image]
+
     candidates.sort(key=lambda candidate: (round(candidate[0] / max(1, height) * 6), candidate[1]))
-    return [card for _, _, card in candidates]
+    detected_cards = [card for _, _, card in candidates]
+    # Keep the existing close-up fallback, but surface it clearly in debug data.
+    used_full_frame_fallback = not detected_cards
+    return DetectionInspection(
+        cards=detected_cards if detected_cards else [image],
+        candidates_found=len(detected_cards),
+        contours_found=len(contours),
+        details=details,
+        annotated_image=annotated,
+        used_full_frame_fallback=used_full_frame_fallback,
+    )
+
+
+def detect_cards(image: np.ndarray) -> list[np.ndarray]:
+    """Return perspective-corrected cards while preserving the public helper API."""
+    return inspect_card_detection(image).cards
 
 
 def crop_name_band(card: np.ndarray) -> np.ndarray:
