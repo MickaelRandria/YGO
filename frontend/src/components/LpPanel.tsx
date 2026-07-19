@@ -23,7 +23,32 @@ function LpPlayer({ id, lp, history, onChange, onEdit }: { id: PlayerId; lp: num
     const timeout = window.setTimeout(() => setPulse(false), 420)
     return () => window.clearTimeout(timeout)
   }, [currentVisual, visual])
-  return <div className={`lp-player ${id} state-${visual}`}><div className="lp-hero"><div className={`lp-hero-circle ${pulse ? 'pulse' : ''}`} aria-label={`État ${labelFor[visual]}`}><Icon size={46} strokeWidth={2.1} /></div></div><div className="lp-info"><span>{id === 'p1' ? 'Joueur 1' : 'Joueur 2'}</span><strong className={lpTone(lp)}>{lp}</strong><small className="lp-state-label">{labelFor[visual]}</small>{formatDelta(last) !== null && <small className={`lp-delta ${last! < 0 ? 'loss' : 'gain'}`}>{formatDelta(last)} LP</small>}<div className="life-bar"><i className={lpTone(lp)} style={{ width: `${Math.min(100, lp / 80)}%` }} /><b className="tick tick-half" /><b className="tick tick-quarter" /></div><div className="lp-actions"><button onClick={() => onChange(id, -100)}>-100</button><button onClick={() => onChange(id, -500)}>-500</button><button onClick={() => onChange(id, -1000)}>-1000</button><button onClick={() => onChange(id, -2000)}>-2000</button><button onClick={() => onEdit(id)}>−/+</button></div></div></div>
+  return <article className={`lp-player ${id} state-${visual}`}>
+    <header className="lp-player-header">
+      <span>{id === 'p1' ? 'Joueur 1' : 'Joueur 2'}</span>
+      <span className={`lp-state ${pulse ? 'pulse' : ''}`} role="status" aria-label={`État ${labelFor[visual]}`}>
+        <Icon size={15} strokeWidth={2.2} />
+        <small className="sr-only">{labelFor[visual]}</small>
+      </span>
+    </header>
+    <div className="lp-value">
+      <strong className={lpTone(lp)}>{lp}</strong>
+      <span>LP</span>
+    </div>
+    <small className={`lp-delta ${last === undefined ? 'empty-delta' : last < 0 ? 'loss' : 'gain'}`}>
+      {labelFor[visual]} · {last === undefined ? 'aucune variation' : `${formatDelta(last)} LP récemment`}
+    </small>
+    <div className="life-bar" role="progressbar" aria-label={`Points de vie du ${id === 'p1' ? 'joueur 1' : 'joueur 2'}`} aria-valuenow={lp} aria-valuemin={0} aria-valuemax={8000}>
+      <i className={lpTone(lp)} style={{ width: `${Math.min(100, Math.max(0, lp) / 80)}%` }} />
+    </div>
+    <div className="lp-actions" aria-label={`Modifier les points de vie du ${id === 'p1' ? 'joueur 1' : 'joueur 2'}`}>
+      <button onClick={() => onChange(id, -100)}>-100</button>
+      <button onClick={() => onChange(id, -500)}>-500</button>
+      <button onClick={() => onChange(id, -1000)}>-1000</button>
+      <button onClick={() => onChange(id, -2000)}>-2000</button>
+      <button onClick={() => onEdit(id)} aria-label={`Ajustement personnalisé des LP du ${id === 'p1' ? 'joueur 1' : 'joueur 2'}`}>−/+</button>
+    </div>
+  </article>
 }
 
 export function LpPanel({ p1, p2, history, onChange }: { p1: number; p2: number; history: LpLog[]; onChange: (player: PlayerId, amount: number) => void }) {
