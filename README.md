@@ -57,6 +57,22 @@ Le fichier Excel source et les caches sont ignorés par Git car ils sont personn
 
 PaddleOCR demande davantage de mémoire que Tesseract. Si le scanner doit un jour être hébergé, il faudra prévoir une machine suffisamment dimensionnée ; les offres gratuites à faible RAM ne sont pas un objectif du backend actuel.
 
+## Deux modes de déploiement
+
+### Local complet (avec scan photo)
+
+1. Lancez le backend : `cd backend && python app.py`.
+2. Lancez le frontend : `cd frontend && npm run dev`.
+3. Gardez `VITE_ENABLE_SCAN=true` dans `frontend/.env` et renseignez `VITE_API_URL` avec l'adresse du backend si vous testez depuis un téléphone.
+
+### Vercel statique (sans scan photo)
+
+1. Déployez uniquement le dossier `frontend/` sur Vercel.
+2. Définissez `VITE_ENABLE_SCAN=false` dans les variables Vercel (le fichier `frontend/.env.production` fournit aussi cette valeur pour un build de production local).
+3. Aucun backend n'est nécessaire : la recherche manuelle, l'import de liste et le mode score restent disponibles gratuitement.
+
+Le code du scanner est exclu du bundle lorsque ce flag vaut `false` : aucune caméra ni requête vers le backend ne sont alors déclenchées.
+
 ## Tester sur un téléphone en Wi-Fi local
 
 1. Trouvez l'adresse IPv4 Wi-Fi du PC : `ipconfig` sous Windows, `hostname -I` sous Linux, ou les détails Wi-Fi sous macOS.

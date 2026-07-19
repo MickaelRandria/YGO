@@ -19,6 +19,6 @@ export interface Card {
 
 export interface Deck { name: string; cards: Card[] }
 export type PlayerZones = Record<Zone, Card[]>
-export interface PlayerState { lp: number; zones: PlayerZones }
+export interface PlayerState { lp: number; zones?: PlayerZones }
 export interface LpLog { player: PlayerId; difference: number; value: number; at: number }
 export interface DuelState { players: Record<PlayerId, PlayerState>; turn: number; activePlayer: PlayerId; phase: Phase; lpHistory: LpLog[] }
