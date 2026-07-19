@@ -66,11 +66,16 @@ def detect_cards(image: np.ndarray) -> list[np.ndarray]:
 
 
 def crop_name_band(card: np.ndarray) -> np.ndarray:
-    """Crop the upper title strip, excluding most of the card's outer border."""
+    """Crop and enhance the upper title strip for lightweight Tesseract OCR."""
     height, width = card.shape[:2]
     top = max(0, int(height * 0.055))
     bottom = max(top + 1, int(height * 0.19))
     left, right = int(width * 0.055), max(1, int(width * 0.945))
     band = card[top:bottom, left:right]
-    # Upscaling improves OCR on modern phone images without changing wording.
-    return cv2.resize(band, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.cvtColor(band, cv2.COLOR_BGR2GRAY)
+    contrast = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
+    denoised = cv2.GaussianBlur(contrast, (3, 3), 0)
+    thresholded = cv2.adaptiveThreshold(
+        denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 7
+    )
+    return cv2.resize(thresholded, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)

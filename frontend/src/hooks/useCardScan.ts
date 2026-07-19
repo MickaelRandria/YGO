@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Card } from '../types'
 import { findCards } from './useCardSearch'
 
-const scanApiUrl = import.meta.env.VITE_SCAN_API_URL ?? 'http://localhost:5000/api/scan'
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
 
 export interface ScanResult {
   name: string
@@ -20,10 +20,15 @@ export function useCardScan() {
     setError('')
     setResults([])
     setStatus('Envoi de la photo au scanner local...')
+    let wakeUpTimer: number | undefined
     try {
       const payload = new FormData()
       payload.append('image', file)
-      const response = await fetch(scanApiUrl, { method: 'POST', body: payload })
+      wakeUpTimer = window.setTimeout(() => {
+        setStatus('Réveil du serveur, ça peut prendre une minute la première fois...')
+      }, 3500)
+      const response = await fetch(`${apiBaseUrl}/api/scan`, { method: 'POST', body: payload })
+      window.clearTimeout(wakeUpTimer)
       const data = await response.json() as { cards?: Array<{ name: string; confidence: number; uncertain?: boolean }>; error?: string }
       if (!response.ok) throw new Error(data.error ?? 'Le scan local a échoué.')
       const detected = data.cards ?? []
@@ -38,6 +43,7 @@ export function useCardScan() {
       const uncertain = resolved.filter(result => result.uncertain).length
       setStatus(`${reliable} résultat${reliable > 1 ? 's' : ''} fiable${reliable > 1 ? 's' : ''}${uncertain ? ` · ${uncertain} à confirmer` : ''}.`)
     } catch (cause) {
+      if (wakeUpTimer !== undefined) window.clearTimeout(wakeUpTimer)
       setError(cause instanceof Error ? cause.message : 'Erreur de scan.')
       setStatus('')
     }
