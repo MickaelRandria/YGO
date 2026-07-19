@@ -105,16 +105,28 @@ def detect_cards(image: np.ndarray) -> list[np.ndarray]:
 
 
 def crop_name_band(card: np.ndarray) -> np.ndarray:
-    """Crop and enhance the upper title strip for lightweight Tesseract OCR."""
+    """Crop only the printed title, excluding the artwork and most of the icon."""
     height, width = card.shape[:2]
+    # The broader 5.5–19% band also captured the stars and the illustration on
+    # real photos.  That visual noise makes Tesseract reject an otherwise clear
+    # title.  These limits keep the title line itself and leave the attribute
+    # icon out of the OCR input.
     top = max(0, int(height * 0.055))
-    bottom = max(top + 1, int(height * 0.19))
-    left, right = int(width * 0.055), max(1, int(width * 0.945))
-    band = card[top:bottom, left:right]
-    gray = cv2.cvtColor(band, cv2.COLOR_BGR2GRAY)
+    bottom = max(top + 1, int(height * 0.165))
+    left, right = int(width * 0.055), max(1, int(width * 0.84))
+    return card[top:bottom, left:right]
+
+
+def generate_name_zone_variants(cropped_bgr_image: np.ndarray) -> dict[str, np.ndarray]:
+    """Generate OCR candidates suited to the varied Yu-Gi-Oh! name backgrounds."""
+    variants: dict[str, np.ndarray] = {}
+    variants['color_upscaled'] = cv2.resize(cropped_bgr_image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.cvtColor(cropped_bgr_image, cv2.COLOR_BGR2GRAY)
     contrast = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
-    denoised = cv2.GaussianBlur(contrast, (3, 3), 0)
-    thresholded = cv2.adaptiveThreshold(
-        denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 7
-    )
-    return cv2.resize(thresholded, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    variants['gray_clahe'] = cv2.resize(contrast, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    variants['otsu'] = cv2.resize(otsu, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    _, otsu_inverted = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    variants['otsu_inverted'] = cv2.resize(otsu_inverted, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    variants['gray_upscaled'] = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    return variants

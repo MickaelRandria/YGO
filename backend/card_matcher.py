@@ -31,8 +31,19 @@ class CardMatcher:
     def match(self, text: str) -> tuple[str, int]:
         if not text or not self.names:
             return '', 0
-        result = process.extractOne(text, self.names, scorer=fuzz.WRatio, processor=str.lower)
+        # A full-string ratio is safer for OCR: WRatio can overvalue a tiny
+        # substring (for example matching noisy "...EVA..." to the card "Eva").
+        result = process.extractOne(text, self.names, scorer=fuzz.ratio, processor=str.lower)
         if result is None:
             return '', 0
         name, score, _ = result
         return str(name), int(round(score))
+
+    def match_best_across_variants(self, ocr_results: dict[str, str]) -> tuple[str, int, str | None]:
+        """Return the highest fuzzy score across every OCR preprocessing variant."""
+        best_name, best_score, best_variant = '', 0, None
+        for variant_name, text in ocr_results.items():
+            name, score = self.match(text)
+            if name and score > best_score:
+                best_name, best_score, best_variant = name, score, variant_name
+        return best_name, best_score, best_variant
