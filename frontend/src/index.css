@@ -153,6 +153,76 @@ h3 { font-size: 17px; font-weight: 800; }
 .phase-picker section button.active { background: var(--accent-yellow); }
 .mode-badge { display: inline-flex; margin: -4px 0 10px; padding: 6px 10px; border-radius: 999px; background: var(--ink); color: var(--white); font-size: 11px; font-weight: 800; }
 
+.score-phase-wrap { position: relative; margin-bottom: 14px; padding: 2px 0 16px; }
+.score-phase-wrap .phase-header { min-height: 48px; align-items: start; }
+.score-phase-wrap .phase-turn { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2px 8px; }
+.score-mode-label { grid-column: 1 / -1; color: var(--surface-coral); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.score-phase-wrap .turn { font-size: 18px; }
+.score-phase-wrap .timer-button { min-height: 42px; }
+.score-phase-wrap .phase-name { min-height: 70px; margin-top: 8px; padding: 10px 16px; background: var(--surface-neutral); color: var(--ink); }
+.score-phase-wrap .phase-name > span:first-child { color: var(--muted); }
+.score-phase-wrap .phase-carousel small { color: var(--muted); }
+.score-phase-wrap .phase-carousel strong { color: var(--ink); font-size: 20px; }
+.score-phase-wrap .phase-actions { margin-top: 8px; }
+.score-phase-wrap .next-phase { min-height: 48px; }
+.score-phase-wrap .end-turn { min-height: 48px; }
+.score-phase-wrap .phase-help { margin-top: 9px; }
+
+.score-player-area { display: grid; gap: 12px; }
+.score-lp-focused { position: relative; overflow: hidden; padding: 20px; border-radius: 28px; background: var(--surface-amber); animation: score-focus-in var(--motion-transition) ease both; }
+.score-lp-focused.p2 { background: var(--surface-coral); color: var(--white); }
+.score-lp-focused.is-impact { animation: score-lp-impact var(--motion-standard) ease-out; }
+.score-lp-focused::before { position: absolute; top: -70px; right: -32px; width: 210px; height: 210px; border-radius: 50%; background: var(--ink); opacity: .1; content: ''; }
+.score-lp-focused.p2::before { background: var(--white); opacity: .16; }
+.score-lp-focused > * { position: relative; z-index: 1; }
+.score-lp-focused header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.score-lp-focused header > div > span { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.score-lp-focused header > div > small { display: inline-block; margin-top: 5px; border-radius: 8px; padding: 4px 6px; background: var(--ink); color: var(--white); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.score-lp-focused.p2 header > div > small { background: var(--white); color: var(--ink); }
+.score-state { display: inline-flex; min-height: 36px; align-items: center; gap: 5px; border-radius: 12px; padding: 7px 9px; background: var(--ink); color: var(--white); font-size: 11px; font-weight: 800; }
+.score-lp-focused.p2 .score-state { background: var(--white); color: var(--ink); }
+.score-lp-value { display: flex; align-items: end; gap: 7px; margin-top: 25px; }
+.score-lp-value strong { font-size: clamp(54px, 17vw, 72px); font-weight: 800; letter-spacing: -4px; line-height: .85; }
+.score-lp-value span { margin-bottom: 5px; font-size: 14px; font-weight: 800; }
+.score-last-change { min-height: 18px; margin: 12px 0 9px; font-size: 12px; font-weight: 800; }
+.score-last-change.empty { opacity: .72; }
+.score-last-change.loss { color: #B52F22; }
+.score-lp-focused.p2 .score-last-change.loss, .score-lp-focused.p2 .score-last-change.gain { color: var(--white); }
+.score-life-bar, .score-opponent-bar { height: 9px; overflow: hidden; border-radius: 9px; background: rgb(20 20 20 / .15); }
+.score-life-bar i, .score-opponent-bar i { display: block; height: 100%; border-radius: inherit; background: var(--ink); transition: width var(--motion-standard) ease; }
+.score-lp-focused.p2 .score-life-bar { background: rgb(255 255 255 / .24); }
+.score-lp-focused.p2 .score-life-bar i { background: var(--white); }
+.score-lp-controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.score-lp-controls button { min-height: 46px; border-radius: 12px; padding: 7px 5px; background: var(--ink); color: var(--white); font-size: 12px; font-weight: 800; transition: transform var(--motion-instant) ease; }
+.score-lp-controls button:active { transform: scale(.94); }
+.score-lp-controls button:last-child { grid-column: 1 / -1; }
+.score-lp-focused.p2 .score-lp-controls button { background: var(--white); color: var(--ink); }
+.score-lp-float { position: absolute; z-index: 3; top: 80px; left: 50%; border-radius: 12px; padding: 7px 10px; transform: translateX(-50%); background: var(--ink); color: var(--white); font-size: 20px; font-weight: 800; animation: lp-float 700ms ease-out both; pointer-events: none; }
+.score-lp-float.gain { background: var(--white); color: var(--ink); }
+.score-opponent { display: grid; grid-template-columns: 1fr auto 20px; gap: 6px 10px; width: 100%; min-height: 92px; align-items: center; border-radius: 20px; padding: 14px 16px; background: var(--surface-coral); color: var(--white); text-align: left; transition: transform var(--motion-standard) ease, opacity var(--motion-standard) ease; }
+.score-opponent.p1 { background: var(--surface-amber); color: var(--ink); }
+.score-opponent:active { transform: scale(.985); }
+.score-opponent > div:first-child span, .score-opponent > div:first-child small { display: block; }
+.score-opponent > div:first-child span { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.score-opponent > div:first-child small { margin-top: 3px; font-size: 11px; font-weight: 600; opacity: .8; }
+.score-opponent > strong { font-size: 26px; font-weight: 800; letter-spacing: -1.4px; }
+.score-opponent > strong small { font-size: 11px; letter-spacing: 0; }
+.score-opponent-bar { grid-column: 1 / -1; height: 6px; background: rgb(255 255 255 / .25); }
+.score-opponent-bar i { background: var(--white); }
+.score-opponent.p1 .score-opponent-bar { background: rgb(20 20 20 / .14); }
+.score-opponent.p1 .score-opponent-bar i { background: var(--ink); }
+.score-opponent svg { grid-column: 3; grid-row: 1; }
+.score-advantage { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 2px 4px; color: var(--muted); font-size: 11px; font-weight: 800; }
+.score-advantage i { position: relative; height: 4px; overflow: hidden; border-radius: 5px; background: rgb(20 20 20 / .15); }
+.score-advantage i::after { position: absolute; top: 0; bottom: 0; width: 50%; border-radius: inherit; background: var(--ink); content: ''; transition: left var(--motion-standard) ease, right var(--motion-standard) ease, width var(--motion-standard) ease; }
+.score-advantage i.equal::after { left: 25%; width: 50%; }
+.score-advantage i.p1::after { left: 0; width: 64%; }
+.score-advantage i.p2::after { right: 0; width: 64%; }
+.score-advantage strong { grid-column: 1 / -1; color: var(--ink); font-size: 11px; text-align: center; text-transform: uppercase; }
+.score-duel .duel-quick-actions { margin-top: 4px; }
+.score-duel .duel-quick-actions button { min-height: 48px; }
+.score-duel .duel-journal { margin-top: 12px; }
+
 .lp-panel { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 0; isolation: isolate; }
 .arena-stage::before { position: absolute; z-index: -1; top: 18px; width: 170px; height: 170px; border-radius: 50%; background: var(--ink); opacity: .1; transition: right var(--motion-transition) ease, left var(--motion-transition) ease, transform var(--motion-transition) ease; content: ''; }
 .arena-stage.active-p1::before { left: -36px; transform: scale(1); }
@@ -293,5 +363,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @keyframes lp-impact { 0%, 100% { transform: translateY(-4px) scale(1.035); } 38% { transform: translateY(-7px) scale(1.07); } }
 @keyframes journal-arrive { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@keyframes score-focus-in { from { opacity: .55; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes score-lp-impact { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.018); } }
+@media (max-width: 389px) { .score-lp-controls { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 350px) { .duel-quick-actions { grid-template-columns: 1fr; } }
 @media (min-width: 481px) { body { padding: 18px 0; } .app { border-radius: 28px; box-shadow: 0 2px 12px rgb(20 20 20 / .06); } }
