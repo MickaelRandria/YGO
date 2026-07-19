@@ -11,7 +11,9 @@ export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, onN
   const [elapsed, setElapsed] = useState(0)
   const holdTimer = useRef<number | undefined>(undefined)
   const held = useRef(false)
-  const next = phases[(phases.indexOf(phase) + 1) % phases.length]
+  const phaseIndex = phases.indexOf(phase)
+  const next = phases[(phaseIndex + 1) % phases.length]
+  const previous = phases[(phaseIndex + phases.length - 1) % phases.length]
   useEffect(() => { if (!timerEnabled) { setElapsed(0); return } const update = () => setElapsed(Date.now() - turnStartedAt); update(); const id = window.setInterval(update, 1000); return () => window.clearInterval(id) }, [timerEnabled, turnStartedAt])
   const clearHold = () => { if (holdTimer.current !== undefined) window.clearTimeout(holdTimer.current); holdTimer.current = undefined }
   const beginHold = () => { held.current = false; holdTimer.current = window.setTimeout(() => { held.current = true; setPickerOpen(true) }, 550) }
@@ -29,13 +31,13 @@ export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, onN
     </header>
 
     <button className="phase-name" onClick={() => setPickerOpen(true)} aria-haspopup="dialog" aria-expanded={pickerOpen}>
-      <span>Phase actuelle</span>
-      <strong>{phase}</strong>
+      <span>Progression de phase</span>
+      <span className="phase-carousel" key={phase}><small>{previous}</small><strong>{phase}</strong><small>{next}</small></span>
     </button>
 
     <div className="phase-actions">
       <button className="next-phase" onPointerDown={beginHold} onPointerUp={finishHold} onPointerCancel={finishHold} onClick={() => { if (!held.current) onNext() }} aria-label={`Phase suivante : ${next}`}>
-        <span><small>Phase suivante</small><strong>{next}</strong></span>
+        <span><small>Passer à</small><strong>{next}</strong></span>
         <ChevronRight size={18} />
       </button>
       <button className="end-turn" onClick={onEndTurn}>
