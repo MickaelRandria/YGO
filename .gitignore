@@ -5,7 +5,9 @@ dist/
 backend/venv/
 backend/cache/card_names.json
 backend/cache/card_names_fr.json
+backend/cache/
 backend/cache/*.png
 backend/__pycache__/
 backend/debug_output/
+dataset/
 venv/

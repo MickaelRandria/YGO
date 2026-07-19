@@ -39,6 +39,18 @@ L'OCR, le cache local de noms et les recherches YGOPRODeck utilisent le françai
 
 Une carte très récente peut ne pas encore avoir de traduction française. Dans ce cas, la recherche réessaie automatiquement avec les données par défaut de YGOPRODeck afin de ne jamais bloquer l'ajout ou la recherche manuelle.
 
+## Référentiel de noms français
+
+Le fuzzy matching combine deux sources : la collection Excel personnelle (prioritaire, car son orthographe est vérifiée sur les cartes physiques) et YGOPRODeck en français, qui couvre les cartes absentes de la collection. L'Excel ne sert qu'à identifier le nom ; les détails de la carte restent résolus par YGOPRODeck.
+
+Pour régénérer le cache après une mise à jour de la collection :
+
+```powershell
+python backend/scripts/extract_excel_names.py "C:\chemin\vers\Collection.xlsx"
+```
+
+Le fichier Excel source et les caches sont ignorés par Git car ils sont personnels. Une personne qui clone le projet peut fournir son propre fichier ou utiliser uniquement le filet de sécurité YGOPRODeck.
+
 ## PWA et déploiement
 
 `vercel.json` déploie le frontend comme PWA statique sur Vercel. Le scanner Flask/PaddleOCR ne peut pas s'exécuter dans le navigateur ni sur cette partie statique : il est prévu pour tourner localement sur votre PC pour le moment.

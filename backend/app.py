@@ -107,6 +107,7 @@ def scan():
             'winning_variant': None,
             'final_match': None,
             'final_fuzzy_score': 0,
+            'match_source': None,
             'final_paddle_confidence': 0,
             'files': debug_files,
             'ocr_details': [],
@@ -140,7 +141,8 @@ def scan():
                 (DEBUG_OUTPUT / filename).write_text(result.text, encoding='utf-8')
                 raw_text_urls[variant_name] = f'/api/debug/files/{filename}'
                 debug_files.append(raw_text_urls[variant_name])
-        name, confidence, winning_variant, paddle_confidence, combined_score = matcher.match_best_across_variants(ocr_results)
+        name, confidence, winning_variant, paddle_confidence, combined_score, match_source = matcher.match_best_across_variants(ocr_results)
+        print(f'[SCAN] Source du match {card_index}: {match_source}')
         print(f'[SCAN] Meilleur match fuzzy {card_index}: {name!r} (fuzzy: {confidence}, Paddle: {paddle_confidence:.2f}, combiné: {combined_score:.2f}, variante: {winning_variant})')
         if debug is not None:
             ocr_details = debug['ocr_details']
@@ -150,6 +152,7 @@ def scan():
                 'ocr_results_by_variant': ocr_debug_results,
                 'fuzzy_match': name or None,
                 'final_fuzzy_score': confidence,
+                'match_source': match_source,
                 'final_paddle_confidence': paddle_confidence,
                 'combined_score': round(combined_score, 4),
                 'winning_variant': winning_variant,
@@ -172,6 +175,7 @@ def scan():
             debug['winning_variant'] = ocr_details[0]['winning_variant']
             debug['final_match'] = ocr_details[0]['fuzzy_match']
             debug['final_fuzzy_score'] = ocr_details[0]['final_fuzzy_score']
+            debug['match_source'] = ocr_details[0]['match_source']
             debug['final_paddle_confidence'] = ocr_details[0]['final_paddle_confidence']
         debug['files'] = debug_files
     response: dict[str, object] = {'cards': cards}
