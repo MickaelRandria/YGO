@@ -39,11 +39,15 @@ class CardMatcher:
         name, score, _ = result
         return str(name), int(round(score))
 
-    def match_best_across_variants(self, ocr_results: dict[str, str]) -> tuple[str, int, str | None]:
-        """Return the highest fuzzy score across every OCR preprocessing variant."""
-        best_name, best_score, best_variant = '', 0, None
-        for variant_name, text in ocr_results.items():
+    def match_best_across_variants(self, ocr_results: dict[str, object]) -> tuple[str, int, str | None, float, float]:
+        """Pick the candidate with the best combined fuzzy and PaddleOCR score."""
+        best_name, best_fuzzy, best_variant, best_paddle, best_combined = '', 0, None, 0.0, 0.0
+        for variant_name, result in ocr_results.items():
+            text = str(getattr(result, 'text', ''))
+            paddle_confidence = float(getattr(result, 'paddle_confidence', 0.0))
             name, score = self.match(text)
-            if name and score > best_score:
-                best_name, best_score, best_variant = name, score, variant_name
-        return best_name, best_score, best_variant
+            combined = (score / 100) * paddle_confidence
+            if name and combined > best_combined:
+                best_name, best_fuzzy, best_variant = name, score, variant_name
+                best_paddle, best_combined = paddle_confidence, combined
+        return best_name, best_fuzzy, best_variant, best_paddle, best_combined

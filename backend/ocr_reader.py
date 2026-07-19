@@ -1,61 +1,107 @@
-"""Lightweight Tesseract OCR for a pre-processed card title strip."""
+"""Local PP-OCRv5 reader for Yu-Gi-Oh! card-name strips."""
 from __future__ import annotations
 
-import os
+from dataclasses import dataclass
 import re
-from pathlib import Path
+from typing import Any
 
 import numpy as np
-import pytesseract
-from PIL import Image
-
-configured_binary = os.getenv('TESSERACT_CMD')
-windows_default_binary = Path(r'C:\Program Files\Tesseract-OCR\tesseract.exe')
-if configured_binary:
-    pytesseract.pytesseract.tesseract_cmd = configured_binary
-elif os.name == 'nt' and windows_default_binary.exists():
-    pytesseract.pytesseract.tesseract_cmd = str(windows_default_binary)
+import cv2
+from paddleocr import PaddleOCR
 
 
-def _is_usable_ocr_text(text: str) -> bool:
-    """Discard OCR noise before it can win a fuzzy match by accident."""
-    letters = sum(character.isalpha() for character in text)
-    words = re.findall(r'[A-Za-z]+', text)
-    return (
-        8 <= letters
-        and len(text) <= 120
-        and letters / max(1, len(text)) >= 0.35
-        and any(len(word) >= 5 for word in words)
-    )
+@dataclass(frozen=True)
+class OcrRead:
+    text: str
+    paddle_confidence: float
 
 
-def read_all_variants(variants: dict[str, np.ndarray]) -> dict[str, str]:
-    """Run both relevant Tesseract line modes on every image variant.
+_ocr_engine: PaddleOCR | None = None
 
-    ``psm 13`` skips layout analysis and is best for photographed cards with a
-    visible pixel grid. If no useful text is obtained, a single ``psm 6``
-    fallback handles clean card renders with a little surrounding decoration.
-    This keeps the normal path at five OCR calls, not ten.
-    """
-    results: dict[str, str] = {}
-    for variant_name, image in variants.items():
-        pil_image = Image.fromarray(image)
-        text = pytesseract.image_to_string(pil_image, config='--oem 3 --psm 13').strip()
-        results[variant_name] = text if text != '-' and _is_usable_ocr_text(text) else ''
-    if any(results.values()):
-        return results
 
-    fallback = pytesseract.image_to_string(
-        Image.fromarray(variants['color_upscaled']),
-        config='--oem 3 --psm 6',
+def get_ocr_engine() -> PaddleOCR:
+    """Create one CPU-only PP-OCRv5 engine per Python process."""
+    global _ocr_engine
+    if _ocr_engine is None:
+        print('[INIT] Chargement de PaddleOCR (premier lancement : téléchargement des modèles, peut prendre 1-2 minutes)...')
+        _ocr_engine = PaddleOCR(
+            device='cpu',
+            enable_mkldnn=False,
+            text_detection_model_name='PP-OCRv5_mobile_det',
+            text_recognition_model_name='en_PP-OCRv5_mobile_rec',
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=True,
+        )
+        print('[INIT] PaddleOCR prêt.')
+    return _ocr_engine
+
+
+def warmup_ocr() -> None:
+    get_ocr_engine()
+
+
+def _result_payload(result: Any) -> dict[str, Any]:
+    """Normalise PaddleOCR 3 result objects to their documented ``res`` dict."""
+    payload = getattr(result, 'json', result)
+    if callable(payload):
+        payload = payload()
+    if not isinstance(payload, dict):
+        return {}
+    candidate = payload.get('res', payload)
+    return candidate if isinstance(candidate, dict) else {}
+
+
+def _clean_title_text(text: str) -> str:
+    """Remove the printed Spell/Trap type suffix when it shares the title band."""
+    return re.sub(
+        r'\s+(?:(?:QUICK[ -]?PLAY|CONTINUOUS|FIELD|EQUIP|RITUAL|COUNTER)\s+)?(?:SPELL|TRAP)\s+CAR(?:D)?(?:\s+.*)?$',
+        '',
+        text,
+        flags=re.IGNORECASE,
     ).strip()
-    results['color_upscaled_psm6_fallback'] = (
-        fallback if fallback != '-' and _is_usable_ocr_text(fallback) else ''
+
+
+def read_card_name(cropped_image_np: np.ndarray) -> OcrRead:
+    """Read one card-name strip and average confidence over its ordered words."""
+    if cropped_image_np is None or cropped_image_np.size == 0:
+        return OcrRead('', 0.0)
+    if cropped_image_np.ndim == 2:
+        cropped_image_np = cv2.cvtColor(cropped_image_np, cv2.COLOR_GRAY2BGR)
+
+    height, width = cropped_image_np.shape[:2]
+    if width > 1800:
+        scale = 1800 / width
+        cropped_image_np = cv2.resize(cropped_image_np, (1800, max(1, int(height * scale))), interpolation=cv2.INTER_AREA)
+
+    payload: dict[str, Any] = {}
+    for result in get_ocr_engine().predict(cropped_image_np):
+        payload = _result_payload(result)
+        if payload:
+            break
+    texts = list(payload.get('rec_texts') or [])
+    scores = list(payload.get('rec_scores') or [])
+    polygons = list(payload.get('rec_polys') or [])
+    if not texts:
+        return OcrRead('', 0.0)
+
+    ordered: list[tuple[float, str, float]] = []
+    for index, text in enumerate(texts):
+        value = str(text).strip()
+        if not value:
+            continue
+        score = float(scores[index]) if index < len(scores) else 0.0
+        x_position = float(polygons[index][0][0]) if index < len(polygons) else float(index)
+        ordered.append((x_position, value, score))
+    if not ordered:
+        return OcrRead('', 0.0)
+    ordered.sort(key=lambda segment: segment[0])
+    return OcrRead(
+        _clean_title_text(' '.join(segment[1] for segment in ordered)),
+        round(sum(segment[2] for segment in ordered) / len(ordered), 4),
     )
-    return results
 
 
-def normalize_text(value: str) -> str:
-    value = value.replace('|', 'I').replace('’', "'")
-    value = re.sub(r"[^A-Za-z0-9 '\-]", ' ', value)
-    return re.sub(r'\s+', ' ', value).strip().lower()
+def read_all_variants(variants: dict[str, np.ndarray]) -> dict[str, OcrRead]:
+    """Run PP-OCRv5 over each gentle pre-processing variant."""
+    return {variant_name: read_card_name(image) for variant_name, image in variants.items()}
