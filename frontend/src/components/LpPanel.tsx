@@ -1,0 +1,9 @@
+import { useState } from 'react'
+import type { LpLog, PlayerId } from '../types'
+import { Modal } from './Modal'
+function lpTone(lp: number) { return lp <= 2000 ? 'danger' : lp <= 4000 ? 'warning' : 'healthy' }
+export function LpPanel({ p1, p2, history, onChange }: { p1: number; p2: number; history: LpLog[]; onChange: (player: PlayerId, amount: number) => void }) {
+  const [editing, setEditing] = useState<PlayerId | null>(null); const [amount, setAmount] = useState('')
+  const apply = () => { const n = Number(amount); if (editing && Number.isFinite(n) && n) onChange(editing, n); setEditing(null); setAmount('') }
+  return <><section className="lp-panel">{([{ id: 'p1', lp: p1, label: 'Joueur 1' }, { id: 'p2', lp: p2, label: 'Joueur 2' }] as const).map(player => <div key={player.id} className="lp-player"><span>{player.label}</span><strong className={lpTone(player.lp)}>{player.lp}</strong><div className="life-bar"><i className={lpTone(player.lp)} style={{ width: `${Math.min(100, player.lp / 80)}%` }} /></div><div className="lp-actions"><button onClick={() => onChange(player.id, -500)}>-500</button><button onClick={() => onChange(player.id, -1000)}>-1000</button><button onClick={() => { setEditing(player.id); setAmount('-') }}>−/+</button></div></div>)}</section><details className="lp-history"><summary>Historique LP ({history.length})</summary>{history.slice(0, 8).map(item => <p key={item.at}><b>{item.player === 'p1' ? 'J1' : 'J2'}</b> {item.difference > 0 ? '+' : ''}{item.difference} → {item.value}</p>)}</details>{editing && <Modal title={`Modifier les LP ${editing === 'p1' ? 'J1' : 'J2'}`} onClose={() => setEditing(null)}><div className="numpad"><input autoFocus inputMode="numeric" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Ex. -1500 ou 500" /><button className="primary" onClick={apply}>Appliquer</button></div></Modal>}</>
+}

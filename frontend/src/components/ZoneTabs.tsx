@@ -1,0 +1,3 @@
+import type { PlayerZones, Zone } from '../types'
+const labels: Array<[Zone, string, string]> = [['deck', '📦', 'Deck'], ['hand', '✋', 'Main'], ['field', '⚔️', 'Terrain'], ['graveyard', '💀', 'Cimetière'], ['banished', '🚫', 'Banni'], ['extra', '⭐', 'Extra']]
+export function ZoneTabs({ zones, selected, onChange }: { zones: PlayerZones; selected: Zone; onChange: (zone: Zone) => void }) { return <div className="zone-tabs">{labels.map(([zone, icon, label]) => <button key={zone} className={zone === selected ? 'active' : ''} onClick={() => onChange(zone)}><span>{icon}</span>{label}<b>{zones[zone].length}</b></button>)}</div> }

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+backend/venv/
+backend/cache/card_names.json
+backend/cache/*.png
+backend/__pycache__/
+venv/

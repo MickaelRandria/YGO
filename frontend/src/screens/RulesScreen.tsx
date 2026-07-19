@@ -1,0 +1,4 @@
+import { useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
+import { rules } from '../data/rules'
+export function RulesScreen() { const [query, setQuery] = useState(''); const results = useMemo(() => { const q = query.toLowerCase().trim(); return q ? rules.filter(rule => `${rule.title} ${rule.tags.join(' ')} ${rule.content}`.toLowerCase().includes(q)) : rules }, [query]); return <main className="screen"><header className="page-header"><h1>Règles</h1><p>Référentiel rapide d'arbitrage</p></header><label className="search-box"><Search size={18} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une règle…" /></label><div className="rules-list">{results.map(rule => <details key={rule.title}><summary>{rule.title}<span>{rule.tags.slice(0, 3).join(' · ')}</span></summary><p>{rule.content}</p></details>)}</div>{!results.length && <p className="empty">Aucune fiche correspondante.</p>}</main> }
