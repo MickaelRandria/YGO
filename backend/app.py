@@ -12,9 +12,13 @@ from card_matcher import CardMatcher
 from ocr_reader import read_card_name
 
 app = Flask(__name__)
-allowed_origins = [origin.strip() for origin in os.getenv(
-    'ALLOWED_ORIGIN', 'http://localhost:5173,http://127.0.0.1:5173'
-).split(',') if origin.strip()]
+configured_origins = os.getenv('ALLOWED_ORIGIN')
+# In production, ALLOWED_ORIGIN restricts CORS to the Vercel app. In local
+# development, this accepts only localhost and RFC 1918 Wi-Fi origins on Vite.
+allowed_origins = [origin.strip() for origin in configured_origins.split(',') if origin.strip()] if configured_origins else (
+    r'^http://(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|'
+    r'192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}):5173$'
+)
 CORS(app, resources={r'/api/*': {'origins': allowed_origins}})
 matcher = CardMatcher()  # cache is loaded once, at process startup
 
@@ -49,4 +53,4 @@ def scan():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

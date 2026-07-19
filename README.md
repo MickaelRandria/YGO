@@ -48,3 +48,30 @@ Le scanner Flask/Tesseract ne peut **pas** s'exécuter dans le navigateur ni dan
 5. Testez le scan depuis le lien Vercel sur un téléphone.
 
 Le plan gratuit Render met le service en veille après inactivité. Le premier scan suivant peut prendre 30 à 60 secondes ; l'application affiche alors un message de réveil. Il n'y a aucun secret à fournir pour l'OCR.
+
+## Tester sur un téléphone en Wi-Fi local
+
+1. Trouvez l'adresse IP locale du PC connecté au Wi-Fi : sous Windows, lancez `ipconfig` et relevez l'**Adresse IPv4** de la carte Wi-Fi (par exemple `192.168.1.42`). Sur macOS, utilisez `ifconfig | grep "inet " | grep -v 127.0.0.1` ou consultez Wi-Fi → Détails. Sous Linux, utilisez `hostname -I`.
+2. Vérifiez que le téléphone est connecté au **même réseau Wi-Fi** que le PC. Le test ne fonctionne pas via 4G/5G.
+3. Dans `frontend/.env`, remplacez `localhost` par cette adresse :
+
+   ```env
+   VITE_API_URL=http://192.168.1.42:5000
+   ```
+
+4. Lancez les deux serveurs :
+
+   ```powershell
+   # Terminal 1
+   cd backend
+   python app.py
+
+   # Terminal 2
+   cd frontend
+   npm run dev
+   ```
+
+5. Sur le téléphone, ouvrez `http://192.168.1.42:5173` (avec la vraie IP du PC). L'input de photo peut alors utiliser directement la caméra du téléphone.
+6. Si la page ne charge pas, le pare-feu bloque probablement les ports entrants 5000 ou 5173. Sous Windows, autorisez Node.js et Python sur les réseaux privés dans Pare-feu Windows Defender → Autoriser une application. Sous macOS, autorisez les connexions entrantes pour Node et Python dans Réglages Système → Sécurité → Pare-feu.
+
+`localhost:5173` continue de fonctionner sur le PC. En local, le backend accepte les origines Vite de votre réseau privé ; sur Render, définissez toujours `ALLOWED_ORIGIN` sur l'URL Vercel pour conserver un CORS strict.
