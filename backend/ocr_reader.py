@@ -17,18 +17,23 @@ class OcrRead:
 
 
 _ocr_engine: PaddleOCR | None = None
+OCR_LANGUAGE = 'fr'
 
 
 def get_ocr_engine() -> PaddleOCR:
-    """Create one CPU-only PP-OCRv5 engine per Python process."""
+    """Create one French, CPU-only PP-OCRv5 engine per Python process."""
     global _ocr_engine
     if _ocr_engine is None:
         print('[INIT] Chargement de PaddleOCR (premier lancement : téléchargement des modèles, peut prendre 1-2 minutes)...')
+        print('[INIT] Modèle de reconnaissance français (Latin) en cours de téléchargement si nécessaire...')
         _ocr_engine = PaddleOCR(
+            # PaddleOCR maps French to its PP-OCRv5 Latin model, including
+            # French accented characters. Keep the language explicit so it
+            # cannot accidentally fall back to the English-only model.
+            lang=OCR_LANGUAGE,
+            ocr_version='PP-OCRv5',
             device='cpu',
             enable_mkldnn=False,
-            text_detection_model_name='PP-OCRv5_mobile_det',
-            text_recognition_model_name='en_PP-OCRv5_mobile_rec',
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=True,
@@ -53,9 +58,12 @@ def _result_payload(result: Any) -> dict[str, Any]:
 
 
 def _clean_title_text(text: str) -> str:
-    """Remove the printed Spell/Trap type suffix when it shares the title band."""
+    """Remove French or English Spell/Trap type labels from the title band."""
     return re.sub(
-        r'\s+(?:(?:QUICK[ -]?PLAY|CONTINUOUS|FIELD|EQUIP|RITUAL|COUNTER)\s+)?(?:SPELL|TRAP)\s+CAR(?:D)?(?:\s+.*)?$',
+        r'\s+(?:'
+        r'CARTE\s+(?:MAGIE|PIÈGE)(?:\s+(?:JEU[ -]?RAPIDE|CONTINUE|DE TERRAIN|D[’\']ÉQUIPEMENT|RITUELLE?|CONTRE))?'
+        r'|(?:(?:QUICK[ -]?PLAY|CONTINUOUS|FIELD|EQUIP|RITUAL|COUNTER)\s+)?(?:SPELL|TRAP)\s+CAR(?:D)?'
+        r')(?:\s+.*)?$',
         '',
         text,
         flags=re.IGNORECASE,

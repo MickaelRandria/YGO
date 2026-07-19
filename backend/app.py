@@ -10,8 +10,8 @@ from flask import Flask, abort, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from card_detector import crop_name_band, generate_name_zone_variants, inspect_card_detection
-from card_matcher import CardMatcher
-from ocr_reader import read_all_variants, warmup_ocr
+from card_matcher import CardMatcher, MATCHING_LANGUAGE
+from ocr_reader import OCR_LANGUAGE, read_all_variants, warmup_ocr
 
 app = Flask(__name__)
 configured_origins = os.getenv('ALLOWED_ORIGIN')
@@ -96,6 +96,8 @@ def scan():
         contours_url = _save_debug_image('02_contours.jpg', inspection.annotated_image)
         debug_files.append(contours_url)
         debug = {
+            'matching_language': MATCHING_LANGUAGE,
+            'ocr_language': OCR_LANGUAGE,
             'original_image_size': [image_width, image_height],
             'contours_found': inspection.contours_found,
             'cards_detected': inspection.candidates_found,

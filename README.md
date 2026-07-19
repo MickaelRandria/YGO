@@ -33,6 +33,12 @@ PaddleOCR est plus lourd à installer qu'un OCR léger, mais plus adapté aux no
 
 Une suggestion sous 70 % est séparée dans l'interface et ne peut jamais être ajoutée sans confirmation. La recherche manuelle reste toujours disponible.
 
+## Données de cartes en français
+
+L'OCR, le cache local de noms et les recherches YGOPRODeck utilisent le français (`language=fr`). Les visuels de cartes fournis par YGOPRODeck restent en anglais : ils sont communs à toutes les langues, ce n'est pas un bug. Les noms et textes de cartes renvoyés par l'API restent, eux, en français.
+
+Une carte très récente peut ne pas encore avoir de traduction française. Dans ce cas, la recherche réessaie automatiquement avec les données par défaut de YGOPRODeck afin de ne jamais bloquer l'ajout ou la recherche manuelle.
+
 ## PWA et déploiement
 
 `vercel.json` déploie le frontend comme PWA statique sur Vercel. Le scanner Flask/PaddleOCR ne peut pas s'exécuter dans le navigateur ni sur cette partie statique : il est prévu pour tourner localement sur votre PC pour le moment.
