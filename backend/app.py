@@ -6,13 +6,12 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-import pytesseract
 from flask import Flask, abort, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-from card_detector import crop_name_band, inspect_card_detection
-from card_matcher import CardMatcher
-from ocr_reader import normalize_text, read_card_name_raw
+from card_detector import crop_name_band, generate_name_zone_variants, inspect_card_detection
+from card_matcher import CardMatcher, MATCHING_LANGUAGE
+from ocr_reader import OCR_LANGUAGE, read_all_variants, warmup_ocr
 
 app = Flask(__name__)
 configured_origins = os.getenv('ALLOWED_ORIGIN')
@@ -97,13 +96,19 @@ def scan():
         contours_url = _save_debug_image('02_contours.jpg', inspection.annotated_image)
         debug_files.append(contours_url)
         debug = {
+            'matching_language': MATCHING_LANGUAGE,
+            'ocr_language': OCR_LANGUAGE,
             'original_image_size': [image_width, image_height],
             'contours_found': inspection.contours_found,
             'cards_detected': inspection.candidates_found,
             'used_full_frame_fallback': inspection.used_full_frame_fallback,
             'detection_details': inspection.details,
-            'raw_ocr_text': None,
-            'cropped_name_zone_saved': None,
+            'ocr_results_by_variant': {},
+            'winning_variant': None,
+            'final_match': None,
+            'final_fuzzy_score': 0,
+            'match_source': None,
+            'final_paddle_confidence': 0,
             'files': debug_files,
             'ocr_details': [],
         }
@@ -116,36 +121,44 @@ def scan():
         name_zone = crop_name_band(card)
         zone_height, zone_width = name_zone.shape[:2]
         print(f'[SCAN] Zone nom {card_index} recadrée: {zone_width}x{zone_height}px')
-        name_zone_url: str | None = None
+        variants = generate_name_zone_variants(name_zone)
+        variant_urls: dict[str, str] = {}
         if debug_enabled:
-            name_zone_url = _save_debug_image(f'04_name_zone_{card_index}.jpg', name_zone)
-            debug_files.append(name_zone_url)
-        try:
-            raw_text = read_card_name_raw(name_zone)
-        except pytesseract.TesseractNotFoundError:
-            return jsonify({'error': 'Tesseract OCR est introuvable. Installez le binaire système tesseract-ocr.'}), 503
-        raw_text_url: str | None = None
-        if debug_enabled:
-            filename = f'05_ocr_raw_{card_index}.txt'
-            (DEBUG_OUTPUT / filename).write_text(raw_text, encoding='utf-8')
-            raw_text_url = f'/api/debug/files/{filename}'
-            debug_files.append(raw_text_url)
-        print(f'[SCAN] Texte OCR brut {card_index}: {raw_text!r}')
-        normalized_text = normalize_text(raw_text)
-        name, confidence = matcher.match(normalized_text)
-        print(f'[SCAN] Meilleur match fuzzy {card_index}: {name!r} (score: {confidence})')
+            for variant_name, variant_image in variants.items():
+                variant_url = _save_debug_image(f'04_name_zone_{card_index}_variant_{variant_name}.jpg', variant_image)
+                variant_urls[variant_name] = variant_url
+                debug_files.append(variant_url)
+        ocr_results = read_all_variants(variants)
+        ocr_debug_results = {
+            variant_name: {'text': result.text, 'paddle_confidence': result.paddle_confidence}
+            for variant_name, result in ocr_results.items()
+        }
+        raw_text_urls: dict[str, str] = {}
+        for variant_name, result in ocr_results.items():
+            print(f'[SCAN] OCR {card_index} [{variant_name}]: {result.text!r} (Paddle: {result.paddle_confidence:.2f})')
+            if debug_enabled:
+                filename = f'05_ocr_raw_{card_index}_{variant_name}.txt'
+                (DEBUG_OUTPUT / filename).write_text(result.text, encoding='utf-8')
+                raw_text_urls[variant_name] = f'/api/debug/files/{filename}'
+                debug_files.append(raw_text_urls[variant_name])
+        name, confidence, winning_variant, paddle_confidence, combined_score, match_source = matcher.match_best_across_variants(ocr_results)
+        print(f'[SCAN] Source du match {card_index}: {match_source}')
+        print(f'[SCAN] Meilleur match fuzzy {card_index}: {name!r} (fuzzy: {confidence}, Paddle: {paddle_confidence:.2f}, combiné: {combined_score:.2f}, variante: {winning_variant})')
         if debug is not None:
             ocr_details = debug['ocr_details']
             assert isinstance(ocr_details, list)
             ocr_details.append({
                 'card_index': card_index,
-                'raw_ocr_text': raw_text,
-                'normalized_ocr_text': normalized_text,
+                'ocr_results_by_variant': ocr_debug_results,
                 'fuzzy_match': name or None,
-                'confidence': confidence,
+                'final_fuzzy_score': confidence,
+                'match_source': match_source,
+                'final_paddle_confidence': paddle_confidence,
+                'combined_score': round(combined_score, 4),
+                'winning_variant': winning_variant,
                 'cropped_card_saved': cropped_url,
-                'cropped_name_zone_saved': name_zone_url,
-                'raw_ocr_text_saved': raw_text_url,
+                'name_zone_variants_saved': variant_urls,
+                'ocr_text_files_saved': raw_text_urls,
             })
         if not name:
             continue
@@ -158,8 +171,12 @@ def scan():
         ocr_details = debug['ocr_details']
         assert isinstance(ocr_details, list)
         if len(ocr_details) == 1:
-            debug['raw_ocr_text'] = ocr_details[0]['raw_ocr_text']
-            debug['cropped_name_zone_saved'] = ocr_details[0]['cropped_name_zone_saved']
+            debug['ocr_results_by_variant'] = ocr_details[0]['ocr_results_by_variant']
+            debug['winning_variant'] = ocr_details[0]['winning_variant']
+            debug['final_match'] = ocr_details[0]['fuzzy_match']
+            debug['final_fuzzy_score'] = ocr_details[0]['final_fuzzy_score']
+            debug['match_source'] = ocr_details[0]['match_source']
+            debug['final_paddle_confidence'] = ocr_details[0]['final_paddle_confidence']
         debug['files'] = debug_files
     response: dict[str, object] = {'cards': cards}
     if debug is not None:
@@ -168,4 +185,5 @@ def scan():
 
 
 if __name__ == '__main__':
+    warmup_ocr()
     app.run(host='0.0.0.0', port=5000, debug=True)

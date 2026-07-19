@@ -1,8 +1,8 @@
 # YGO Referee
 
-Poste d'arbitrage mobile-first pour duels Yu-Gi-Oh! physiques. Le scan est gratuit et open source : Flask, OpenCV, Tesseract et RapidFuzz — aucune clé API ni service de vision payant.
+PWA mobile-first pour arbitrer des duels Yu-Gi-Oh! physiques. Le scan est 100 % local et gratuit : Flask, OpenCV, PaddleOCR (PP-OCRv5) et RapidFuzz, sans clé API ni service cloud.
 
-## Démarrage
+## Démarrage local
 
 Dans un premier terminal :
 
@@ -25,57 +25,69 @@ npm run dev
 
 Le frontend écoute sur `http://localhost:5173` et l'API locale sur `http://localhost:5000`.
 
-Tesseract est aussi une dépendance système : installez le binaire `tesseract-ocr` et vérifiez qu'il est disponible dans le `PATH` avant de lancer le backend local. Render l'installe automatiquement via `backend/render-build.sh`.
-
-Au premier lancement, le backend télécharge une seule fois les noms de cartes depuis YGOPRODeck dans `backend/cache/card_names.json`; il les réutilise pendant 30 jours.
+PaddleOCR et PaddlePaddle sont installés par `pip` : aucun binaire système, clé API ou service cloud n'est nécessaire. Au premier démarrage, PaddleOCR télécharge ses modèles PP-OCRv5 dans le cache local ; cela peut prendre une à deux minutes. Les démarrages suivants sont plus rapides.
 
 ## Limites du scan
 
-La reconnaissance est la plus fiable avec des cartes à plat, bien éclairées, non sleevées et cadrées sans reflets. Tesseract est moins précis qu'une solution cloud IA sur les polices stylisées : les sleeves brillantes, angles prononcés, ombres, cartes abîmées et photos floues dégradent encore l'OCR. Une suggestion sous 70% est explicitement séparée dans l'interface et ne peut jamais être ajoutée sans confirmation manuelle. La recherche manuelle reste toujours disponible.
+PaddleOCR est plus lourd à installer qu'un OCR léger, mais plus adapté aux noms imprimés sur fonds colorés ou illustrés. La reconnaissance reste la plus fiable avec des cartes à plat, bien éclairées, non sleevées et sans reflets. Les sleeves brillantes, les ombres, les angles prononcés, les cartes abîmées et les photos floues dégradent l'OCR.
 
-## Déploiement Vercel
+Une suggestion sous 70 % est séparée dans l'interface et ne peut jamais être ajoutée sans confirmation. La recherche manuelle reste toujours disponible.
 
-Le fichier `vercel.json` déploie `frontend/` comme site statique. Vercel fournit HTTPS, ce qui permet l'installation de la PWA (manifest et service worker inclus).
+## Données de cartes en français
 
-Le scanner Flask/Tesseract ne peut **pas** s'exécuter dans le navigateur ni dans ce déploiement statique : il est prévu pour Render.
+L'OCR, le cache local de noms et les recherches YGOPRODeck utilisent le français (`language=fr`). Les visuels de cartes fournis par YGOPRODeck restent en anglais : ils sont communs à toutes les langues, ce n'est pas un bug. Les noms et textes de cartes renvoyés par l'API restent, eux, en français.
 
-### Mise en ligne Render + Vercel
+Une carte très récente peut ne pas encore avoir de traduction française. Dans ce cas, la recherche réessaie automatiquement avec les données par défaut de YGOPRODeck afin de ne jamais bloquer l'ajout ou la recherche manuelle.
 
-1. Dans Render, créez un **Blueprint** depuis ce dépôt : `render.yaml` crée le service Python gratuit et installe Tesseract au build.
-2. Attendez l'URL Render, puis vérifiez `https://<service>.onrender.com/api/health`.
-3. Dans Vercel, importez le dépôt puis définissez `VITE_API_URL=https://<service>.onrender.com` avant le déploiement.
-4. Une fois l'URL Vercel connue, définissez `ALLOWED_ORIGIN=https://<projet>.vercel.app` dans Render et redéployez : c'est le seul paramètre requis pour verrouiller le CORS.
-5. Testez le scan depuis le lien Vercel sur un téléphone.
+## Référentiel de noms français
 
-Le plan gratuit Render met le service en veille après inactivité. Le premier scan suivant peut prendre 30 à 60 secondes ; l'application affiche alors un message de réveil. Il n'y a aucun secret à fournir pour l'OCR.
+Le fuzzy matching combine deux sources : la collection Excel personnelle (prioritaire, car son orthographe est vérifiée sur les cartes physiques) et YGOPRODeck en français, qui couvre les cartes absentes de la collection. L'Excel ne sert qu'à identifier le nom ; les détails de la carte restent résolus par YGOPRODeck.
+
+Pour régénérer le cache après une mise à jour de la collection :
+
+```powershell
+python backend/scripts/extract_excel_names.py "C:\chemin\vers\Collection.xlsx"
+```
+
+Le fichier Excel source et les caches sont ignorés par Git car ils sont personnels. Une personne qui clone le projet peut fournir son propre fichier ou utiliser uniquement le filet de sécurité YGOPRODeck.
+
+## PWA et déploiement
+
+`vercel.json` déploie le frontend comme PWA statique sur Vercel. Le scanner Flask/PaddleOCR ne peut pas s'exécuter dans le navigateur ni sur cette partie statique : il est prévu pour tourner localement sur votre PC pour le moment.
+
+PaddleOCR demande davantage de mémoire que Tesseract. Si le scanner doit un jour être hébergé, il faudra prévoir une machine suffisamment dimensionnée ; les offres gratuites à faible RAM ne sont pas un objectif du backend actuel.
+
+## Deux modes de déploiement
+
+### Local complet (avec scan photo)
+
+1. Lancez le backend : `cd backend && python app.py`.
+2. Lancez le frontend : `cd frontend && npm run dev`.
+3. Gardez `VITE_ENABLE_SCAN=true` dans `frontend/.env` et renseignez `VITE_API_URL` avec l'adresse du backend si vous testez depuis un téléphone.
+
+### Vercel statique (sans scan photo)
+
+1. Déployez uniquement le dossier `frontend/` sur Vercel.
+2. Définissez `VITE_ENABLE_SCAN=false` dans les variables Vercel (le fichier `frontend/.env.production` fournit aussi cette valeur pour un build de production local).
+3. Aucun backend n'est nécessaire : la recherche manuelle, l'import de liste et le mode score restent disponibles gratuitement.
+
+Le code du scanner est exclu du bundle lorsque ce flag vaut `false` : aucune caméra ni requête vers le backend ne sont alors déclenchées.
 
 ## Tester sur un téléphone en Wi-Fi local
 
-1. Trouvez l'adresse IP locale du PC connecté au Wi-Fi : sous Windows, lancez `ipconfig` et relevez l'**Adresse IPv4** de la carte Wi-Fi (par exemple `192.168.1.42`). Sur macOS, utilisez `ifconfig | grep "inet " | grep -v 127.0.0.1` ou consultez Wi-Fi → Détails. Sous Linux, utilisez `hostname -I`.
-2. Vérifiez que le téléphone est connecté au **même réseau Wi-Fi** que le PC. Le test ne fonctionne pas via 4G/5G.
-3. Dans `frontend/.env`, remplacez `localhost` par cette adresse :
+1. Trouvez l'adresse IPv4 Wi-Fi du PC : `ipconfig` sous Windows, `hostname -I` sous Linux, ou les détails Wi-Fi sous macOS.
+2. Vérifiez que le téléphone est sur le même réseau Wi-Fi (pas en 4G/5G).
+3. Dans `frontend/.env`, remplacez `localhost` par l'adresse du PC :
 
    ```env
    VITE_API_URL=http://192.168.1.42:5000
    ```
 
-4. Lancez les deux serveurs :
+4. Lancez `python app.py` dans `backend`, puis `npm run dev` dans `frontend`.
+5. Ouvrez `http://192.168.1.42:5173` sur le téléphone, avec votre vraie adresse IP.
 
-   ```powershell
-   # Terminal 1
-   cd backend
-   python app.py
+Si la page ne charge pas, autorisez Python et Node.js sur les réseaux privés dans le pare-feu du PC. `localhost:5173` continue de fonctionner normalement sur le PC.
 
-   # Terminal 2
-   cd frontend
-   npm run dev
-   ```
+## Diagnostiquer un scan
 
-5. Sur le téléphone, ouvrez `http://192.168.1.42:5173` (avec la vraie IP du PC). L'input de photo peut alors utiliser directement la caméra du téléphone.
-6. Si la page ne charge pas, le pare-feu bloque probablement les ports entrants 5000 ou 5173. Sous Windows, autorisez Node.js et Python sur les réseaux privés dans Pare-feu Windows Defender → Autoriser une application. Sous macOS, autorisez les connexions entrantes pour Node et Python dans Réglages Système → Sécurité → Pare-feu.
-
-`localhost:5173` continue de fonctionner sur le PC. En local, le backend accepte les origines Vite de votre réseau privé ; sur Render, définissez toujours `ALLOWED_ORIGIN` sur l'URL Vercel pour conserver un CORS strict.
-
-### Diagnostiquer un scan qui échoue
-
-Ouvrez temporairement `http://<IP-DU-PC>:5173/?debugScan=true` sur le téléphone puis relancez le scan. Le backend conservera les images intermédiaires uniquement en local. Ouvrez ensuite `http://<IP-DU-PC>:5000/api/debug/last` pour visualiser l'original, les contours acceptés (vert) et rejetés (rouge), chaque recadrage, la zone envoyée à Tesseract et le texte OCR brut. Les fichiers sont placés dans `backend/debug_output/` et ignorés par Git.
+Ouvrez temporairement `http://<IP-DU-PC>:5173/?debugScan=true`, relancez le scan, puis ouvrez `http://<IP-DU-PC>:5000/api/debug/last`. La page montre l'original, les contours, les recadrages, les variantes envoyées à PaddleOCR, leurs textes et leurs scores de confiance natifs. Les fichiers sont enregistrés localement dans `backend/debug_output/` et ignorés par Git.
