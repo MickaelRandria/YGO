@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { LpLog, PlayerId } from '../types'
 import { Modal } from './Modal'
 
-const adjustments = [-100, -500, -1000, -2000] as const
+const lossAdjustments = [-100, -500, -1000, -2000] as const
+const gainAdjustments = [100, 500, 1000, 2000] as const
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
 
 function CompactLpPlayerCard({ player, lp, last, activePlayer, onAdjust, onCustom }: { player: PlayerId; lp: number; last?: number; activePlayer: PlayerId; onAdjust: (amount: number) => void; onCustom: () => void }) {
@@ -50,7 +51,8 @@ function CompactLpPlayerCard({ player, lp, last, activePlayer, onAdjust, onCusto
     <p className={`score-last-change ${last === undefined ? 'empty' : last < 0 ? 'loss' : 'gain'}`}>{last === undefined ? 'Aucune variation' : `${formatDelta(last)} LP`}</p>
     <div className="score-life-bar" role="progressbar" aria-label={`Points de vie du joueur ${player === 'p1' ? '1' : '2'}`} aria-valuenow={lp} aria-valuemin={0} aria-valuemax={8000}><i style={{ width: `${Math.min(100, Math.max(0, lp) / 80)}%` }} /></div>
     <div className="score-lp-controls">
-      {adjustments.map(amount => <button key={amount} onClick={() => adjust(amount)} aria-label={`Retirer ${Math.abs(amount)} LP au joueur ${player === 'p1' ? '1' : '2'}`}>{amount}</button>)}
+      <div className="score-lp-row" aria-label="Raccourcis de perte de LP">{lossAdjustments.map(amount => <button key={amount} onClick={() => adjust(amount)} aria-label={`Retirer ${Math.abs(amount)} LP au joueur ${player === 'p1' ? '1' : '2'}`}>{amount}</button>)}</div>
+      <div className="score-lp-row" aria-label="Raccourcis de gain de LP">{gainAdjustments.map(amount => <button className="score-lp-gain" key={amount} onClick={() => adjust(amount)} aria-label={`Ajouter ${amount} LP au joueur ${player === 'p1' ? '1' : '2'}`}>+{amount}</button>)}</div>
       <button className="score-lp-custom" onClick={onCustom} aria-label={`Ajuster librement les LP du joueur ${player === 'p1' ? '1' : '2'}`}>±</button>
     </div>
   </article>

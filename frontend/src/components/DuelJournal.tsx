@@ -4,6 +4,7 @@ import type { DuelEvent, EventPlayer, PlayerId } from '../types'
 import { Modal } from './Modal'
 
 const label = (player: EventPlayer) => player === 'p1' ? 'J1' : player === 'p2' ? 'J2' : 'Global'
+const toneFor = (content: string, kind: DuelEvent['kind']) => kind === 'lp' ? content.startsWith('+') ? 'gain' : 'loss' : ''
 
 export function DuelJournal({ events, onAdd }: { events: DuelEvent[]; onAdd: (player: EventPlayer, content: string) => void }) {
   const [expanded, setExpanded] = useState(false)
@@ -38,7 +39,7 @@ export function DuelJournal({ events, onAdd }: { events: DuelEvent[]; onAdd: (pl
     </form>}
 
     <div className="journal-list journal-compact">
-      {recent.length ? recent.map(event => <article className={`journal-entry ${event.kind}`} key={event.id}><span className={`event-player ${event.player}`}>{label(event.player)}</span><div><small>T{event.turn} · {event.phase} · {new Date(event.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><strong>{event.content}</strong></div></article>) : <p className="empty">Les actions du duel apparaîtront ici.</p>}
+      {recent.length ? recent.map(event => <article className={`journal-entry ${event.kind} ${toneFor(event.content, event.kind)}`} key={event.id}><span className={`event-player ${event.player}`}>{label(event.player)}</span><div><small>T{event.turn} · {event.phase} · {new Date(event.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><strong>{event.content}</strong></div></article>) : <p className="empty">Les actions du duel apparaîtront ici.</p>}
     </div>
     <button className="journal-more" onClick={() => setExpanded(true)}>Voir l’historique complet</button>
 
@@ -55,7 +56,7 @@ export function DuelJournal({ events, onAdd }: { events: DuelEvent[]; onAdd: (pl
         <input id="journal-turn-filter" inputMode="numeric" value={turnFilter} onChange={event => setTurnFilter(event.target.value.replace(/\D/g, ''))} placeholder="Tour" />
       </div>
       <div className="journal-list">
-        {visible.length ? visible.map(event => <article className={`journal-entry ${event.kind}`} key={event.id}>
+        {visible.length ? visible.map(event => <article className={`journal-entry ${event.kind} ${toneFor(event.content, event.kind)}`} key={event.id}>
           <span className={`event-player ${event.player}`}>{label(event.player)}</span>
           <div>
             <small>T{event.turn} · {event.phase} · {new Date(event.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
