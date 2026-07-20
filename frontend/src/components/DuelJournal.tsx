@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { ChevronUp, Plus } from 'lucide-react'
 import type { DuelEvent, EventPlayer, PlayerId } from '../types'
 import { Modal } from './Modal'
 
@@ -14,12 +14,12 @@ export function DuelJournal({ events, onAdd }: { events: DuelEvent[]; onAdd: (pl
   const [filter, setFilter] = useState<'all' | EventPlayer>('all')
   const [turnFilter, setTurnFilter] = useState('')
   const visible = useMemo(() => events.filter(event => (filter === 'all' || event.player === filter) && (!turnFilter || event.turn === Number(turnFilter))), [events, filter, turnFilter])
-  const recent = useMemo(() => events.slice(0, 3), [events])
+  const recent = useMemo(() => events.slice(0, 2), [events])
   const submit = () => { onAdd(player, content); setContent(''); setAdding(false) }
   return <section className="duel-journal">
     <header>
-      <button className="journal-title" onClick={() => setExpanded(true)} aria-haspopup="dialog">
-        Journal du duel <span>{events.length}</span>
+      <button className="journal-title" onClick={() => setExpanded(true)} aria-haspopup="dialog" aria-label="Ouvrir le journal complet">
+        <span className="journal-label">Derniers événements</span><span className="journal-count">{events.length}</span><ChevronUp size={16} aria-hidden="true" />
       </button>
       <button className="journal-add" onClick={() => setAdding(current => !current)} aria-expanded={adding}>
         <Plus size={16} /> Événement
