@@ -9,7 +9,8 @@ const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
 
 export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabled, onAdjust, onCustom }: { player: PlayerId; lp: number; last?: number; activePlayer: PlayerId; hapticsEnabled: boolean; onAdjust: (amount: number) => void; onCustom: () => void }) {
-  const previous = useRef(lp)
+  const previousLp = useRef(lp)
+  const displayedLp = useRef(lp)
   const [displayLp, setDisplayLp] = useState(lp)
   const [feedback, setFeedback] = useState<number | null>(null)
   const [impact, setImpact] = useState(false)
@@ -18,11 +19,16 @@ export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabl
   const playerNumber = player === 'p1' ? '1' : '2'
 
   useEffect(() => {
-    const from = previous.current
-    if (from === lp) return
+    const previous = previousLp.current
+    if (previous === lp) {
+      displayedLp.current = lp
+      setDisplayLp(lp)
+      return
+    }
 
-    previous.current = lp
-    const difference = lp - from
+    previousLp.current = lp
+    const from = displayedLp.current
+    const difference = lp - previous
     setFeedback(difference)
     setImpact(!reducedMotion())
     if (difference < 0 && hapticsEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -32,6 +38,7 @@ export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabl
     const impactTimer = window.setTimeout(() => setImpact(false), 180)
     const feedbackTimer = window.setTimeout(() => setFeedback(null), 700)
     if (reducedMotion()) {
+      displayedLp.current = lp
       setDisplayLp(lp)
       return () => { window.clearTimeout(impactTimer); window.clearTimeout(feedbackTimer) }
     }
@@ -40,7 +47,9 @@ export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabl
     let frame = 0
     const tick = (now: number) => {
       const progress = Math.min(1, (now - started) / 300)
-      setDisplayLp(Math.round(from + (lp - from) * (1 - Math.pow(1 - progress, 3))))
+      const next = Math.round(from + (lp - from) * (1 - Math.pow(1 - progress, 3)))
+      displayedLp.current = next
+      setDisplayLp(next)
       if (progress < 1) frame = window.requestAnimationFrame(tick)
     }
     frame = window.requestAnimationFrame(tick)
