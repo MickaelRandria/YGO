@@ -3,8 +3,8 @@ import type { LpLog, PlayerId } from '../types'
 import { DuelScape } from './DuelScape'
 import { Modal } from './Modal'
 
-const lossAdjustments = [-100, -500, -1000, -2000] as const
-const gainAdjustments = [100, 500, 1000, 2000] as const
+const lossAdjustments = [-100, -500, -1000] as const
+const gainAdjustments = [100, 500, 1000] as const
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
 const compactAmount = (value: number) => `${value > 0 ? '+' : '-'}${Math.abs(value) >= 1000 ? `${Math.abs(value) / 1000}K` : Math.abs(value)}`
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
