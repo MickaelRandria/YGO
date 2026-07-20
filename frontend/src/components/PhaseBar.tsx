@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, Clock3, Flag, X } from 'lucide-react'
+import { ChevronRight, Clock3, Flag, Star, X } from 'lucide-react'
 import type { Phase, PlayerId } from '../types'
 
 const phases: Phase[] = ['Draw', 'Standby', 'Main 1', 'Battle', 'Main 2', 'End']
@@ -21,7 +21,7 @@ export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, onN
   return <section className={compact ? 'score-phase-wrap' : 'phase-wrap'}>
     <header className="phase-header">
       <div className="phase-turn">
-        {compact && <span className="score-mode-label">Mode score</span>}<span className="turn">T{turn}</span><span className="player-pill">{player === 'p1' ? 'J1 actif' : 'J2 actif'}</span>
+        {compact && <span className="score-mode-label">Mode score</span>}<span className="turn">T{turn}</span><span className="player-pill">{player === 'p1' ? 'J1 actif' : 'J2 actif'}</span>{!compact && <span className="turn-stars" aria-label={`Tour ${turn}`}><span className="sr-only">Tour {turn}</span>{Array.from({ length: Math.min(turn, 5) }, (_, index) => <Star key={index} size={11} fill="currentColor" aria-hidden="true" />)}</span>}
       </div>
       <button className={`timer-button ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}>
         <Clock3 size={16} />
