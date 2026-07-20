@@ -6,6 +6,7 @@
   --surface-neutral: #E4E2DC;
   --surface-amber: #F0A82E;
   --surface-coral: #F2634B;
+  --surface-success: #267341;
   --ink: #141414;
   --accent-yellow: #F0A82E;
   --accent-blue: #4D9FE8;
@@ -191,11 +192,16 @@ h3 { font-size: 17px; font-weight: 800; }
 .score-life-bar i { display: block; height: 100%; border-radius: inherit; background: var(--ink); transition: width var(--motion-standard) ease; }
 .score-lp-player.p2 .score-life-bar { background: rgb(255 255 255 / .24); }
 .score-lp-player.p2 .score-life-bar i { background: var(--white); }
-.score-lp-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.score-lp-controls { display: grid; gap: 8px; margin-top: 12px; }
+.score-lp-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
+.score-lp-row::-webkit-scrollbar, .lp-action-row::-webkit-scrollbar { display: none; }
 .score-lp-controls button { min-width: 0; min-height: 44px; border-radius: 12px; padding: 7px 3px; background: var(--ink); color: var(--white); font-size: 11px; font-weight: 800; transition: transform var(--motion-instant) ease; }
+.score-lp-row button { flex: 0 0 56px; }
 .score-lp-controls button:active { transform: scale(.94); }
-.score-lp-controls .score-lp-custom { grid-column: 1 / -1; }
+.score-lp-controls .score-lp-custom { width: 100%; }
+.score-lp-controls .score-lp-gain { background: var(--surface-success); color: var(--white); }
 .score-lp-player.p2 .score-lp-controls button { background: var(--white); color: var(--ink); }
+.score-lp-player.p2 .score-lp-controls .score-lp-gain { background: var(--surface-success); color: var(--white); }
 .score-lp-float { position: absolute; z-index: 3; top: 55px; left: 50%; border-radius: 12px; padding: 6px 8px; transform: translateX(-50%); background: var(--ink); color: var(--white); font-size: 16px; font-weight: 800; animation: lp-float 700ms ease-out both; pointer-events: none; }
 .score-lp-float.gain { background: var(--white); color: var(--ink); }
 .score-advantage { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 4px 4px 0; color: var(--muted); font-size: 11px; font-weight: 800; }
@@ -244,15 +250,18 @@ h3 { font-size: 17px; font-weight: 800; }
 .lp-player.p2 .life-bar { background: rgb(255 255 255 / .22); }
 .lp-player.p2 .life-bar i { background: var(--white); }
 .lp-player.p2 .life-bar i.danger { background: var(--ink); }
-.lp-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.lp-actions { display: grid; gap: 8px; margin-top: 12px; }
+.lp-action-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
 .lp-actions button { min-width: 0; min-height: 44px; justify-content: center; padding: 6px 4px; font-size: 11px; }
-.lp-actions button:last-child { grid-column: 1 / -1; }
+.lp-action-row button { flex: 0 0 56px; }
+.lp-actions > button:last-child { width: 100%; }
 .lp-delta { display: block; min-height: 31px; margin-top: 7px; font-size: 11px; font-weight: 800; line-height: 1.3; }
 .lp-delta.empty-delta { opacity: .58; }
 .lp-delta.loss { color: #B52F22; }
 .lp-delta.gain { color: #267341; }
 .lp-player.p2 .lp-delta.loss, .lp-player.p2 .lp-delta.gain { color: var(--white); }
 .lp-player.p2 .lp-actions button { background: var(--white); color: var(--ink); }
+.lp-actions .lp-gain, .lp-player.p2 .lp-actions .lp-gain { background: var(--surface-success); color: var(--white); }
 .lp-actions button { transition: transform var(--motion-instant) ease, background var(--motion-instant) ease; }
 .lp-actions button:active { transform: scale(.94); }
 .arena-balance { position: absolute; z-index: 4; top: 36%; left: 50%; display: grid; width: 46px; height: 46px; place-items: center; border-radius: 14px; transform: translate(-50%, -50%); background: var(--ink); color: var(--white); pointer-events: none; }
@@ -292,6 +301,8 @@ h3 { font-size: 17px; font-weight: 800; }
 .journal-entry small, .journal-entry strong { display: block; }
 .journal-entry small { color: var(--muted); font-size: 11px; font-weight: 600; }
 .journal-entry strong { margin-top: 3px; font-size: 12px; line-height: 1.4; }
+.journal-entry.gain strong { color: var(--surface-success); }
+.journal-entry.loss strong { color: #B52F22; }
 .journal-more { width: 100%; min-height: 44px; margin-top: 10px; border-radius: 12px; background: transparent; color: var(--ink); font-size: 12px; font-weight: 800; text-align: left; }
 .journal-more::after { margin-left: 7px; content: '→'; }
 .end-confirm { line-height: 1.5; }
