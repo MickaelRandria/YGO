@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Shield, ShieldAlert, ShieldOff, Zap } from 'lucide-react'
 import type { LpLog, PlayerId } from '../types'
+import { DuelCreature } from './DuelCreature'
 import { Modal } from './Modal'
 
 type VisualState = 'dominant' | 'stable' | 'critical' | 'eliminated'
 const visualFor = (lp: number): VisualState => lp <= 0 ? 'eliminated' : lp < 3000 ? 'critical' : lp <= 6000 ? 'stable' : 'dominant'
-const iconFor = { dominant: Zap, stable: Shield, critical: ShieldAlert, eliminated: ShieldOff }
 const labelFor = { dominant: 'Dominant', stable: 'Stable', critical: 'Critique', eliminated: 'Éliminé' }
 const lpTone = (lp: number) => lp <= 2000 ? 'danger' : lp <= 4000 ? 'warning' : 'healthy'
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
@@ -15,7 +14,6 @@ const gainAdjustments = [100, 500, 1000, 2000] as const
 
 function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void }) {
   const visual = visualFor(lp)
-  const Icon = iconFor[visual]
   const previousLp = useRef(lp)
   const frame = useRef<number | null>(null)
   const [displayLp, setDisplayLp] = useState(lp)
@@ -60,7 +58,7 @@ function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId;
     <header className="lp-player-header">
       <span>{id === 'p1' ? 'Joueur 1' : 'Joueur 2'}</span>
       {active && <small className="active-label">Actif</small>}
-      <span className="lp-state" role="status" aria-label={`État ${labelFor[visual]}`}><Icon size={15} strokeWidth={2.2} /><small className="sr-only">{labelFor[visual]}</small></span>
+      <span className="lp-state" role="status" aria-label={`État ${labelFor[visual]}`}><DuelCreature state={visual} /><small className="sr-only">{labelFor[visual]}</small></span>
     </header>
     <div className="lp-value"><strong className={lpTone(lp)}>{displayLp}</strong><span>LP</span></div>
     <small className={`lp-delta ${last === undefined ? 'empty-delta' : last < 0 ? 'loss' : 'gain'}`}>{labelFor[visual]} · {last === undefined ? 'aucune variation' : `${formatDelta(last)} LP récemment`}</small>
