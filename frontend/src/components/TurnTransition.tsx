@@ -21,7 +21,7 @@ export function TurnTransition({ activePlayer, turn }: { activePlayer: PlayerId;
     if (previousPlayer.current === activePlayer) return
     previousPlayer.current = activePlayer
     setAnnouncement({ player: activePlayer, turn })
-    const timeout = window.setTimeout(() => setAnnouncement(null), 760)
+    const timeout = window.setTimeout(() => setAnnouncement(null), 1280)
     return () => window.clearTimeout(timeout)
   }, [activePlayer, turn])
 
