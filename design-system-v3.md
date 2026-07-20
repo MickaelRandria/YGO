@@ -28,7 +28,8 @@ hiérarchie visuelle principale.
 - J1 est orange feu et J2 bleu électrique. Ces couleurs servent aux halos,
   lignes de vie, bordures actives et retours d'action, jamais aux grands aplats.
 - Les cartes d'action LP sont gris sombre, compactes, et conservent une cible
-  tactile minimale de 44 px.
+  tactile minimale de 44 px. Chaque rangée expose trois raccourcis (`100`,
+  `500`, `1K`) sans défilement ; le bouton `±` couvre les autres montants.
 - Les grandes zones (arène, sheet, modal et navigation) peuvent recevoir une
   ombre diffuse et un liseré interne. Les petits boutons n'en reçoivent pas.
 - Les animations expriment un changement réel : LP, phase, victoire ou impact.
