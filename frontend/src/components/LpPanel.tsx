@@ -9,8 +9,8 @@ const labelFor = { dominant: 'Dominant', stable: 'Stable', critical: 'Critique',
 const lpTone = (lp: number) => lp <= 2000 ? 'danger' : lp <= 4000 ? 'warning' : 'healthy'
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-const lossAdjustments = [-100, -500, -1000] as const
-const gainAdjustments = [100, 500, 1000] as const
+const lossAdjustments = [-100, -500, -1000, -2000] as const
+const gainAdjustments = [100, 500, 1000, 2000] as const
 const compactAmount = (value: number) => `${value > 0 ? '+' : '-'}${Math.abs(value) >= 1000 ? `${Math.abs(value) / 1000}K` : Math.abs(value)}`
 
 function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void }) {
