@@ -13,7 +13,7 @@ const lossAdjustments = [-100, -500, -1000, -2000] as const
 const gainAdjustments = [100, 500, 1000, 2000] as const
 const compactAmount = (value: number) => `${value > 0 ? '+' : '-'}${Math.abs(value) >= 1000 ? `${Math.abs(value) / 1000}K` : Math.abs(value)}`
 
-function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void }) {
+function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit, onSoundLp }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void; onSoundLp: (player: PlayerId, amount: number) => void }) {
   const visual = visualFor(lp)
   const previousLp = useRef(lp)
   const frame = useRef<number | null>(null)
@@ -53,6 +53,9 @@ function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }:
   }, [hapticsEnabled, lp])
 
   const adjust = (amount: number) => {
+    const applied = Math.max(0, lp + amount) - lp
+    if (!applied) return
+    onSoundLp(id, applied)
     onChange(id, amount)
   }
 
@@ -76,12 +79,24 @@ function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }:
   </article>
 }
 
-export function LpPanel({ p1, p2, history, activePlayer, hapticsEnabled, onChange }: { p1: number; p2: number; history: LpLog[]; activePlayer: PlayerId; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void }) {
+export function LpPanel({ p1, p2, history, activePlayer, hapticsEnabled, onChange, onSoundLp }: { p1: number; p2: number; history: LpLog[]; activePlayer: PlayerId; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void; onSoundLp: (player: PlayerId, amount: number) => void }) {
   const [editing, setEditing] = useState<PlayerId | null>(null)
   const [amount, setAmount] = useState('')
-  const apply = () => { const value = Number(amount); if (editing && Number.isFinite(value) && value) onChange(editing, value); setEditing(null); setAmount('') }
+  const apply = () => {
+    const value = Number(amount)
+    if (editing && Number.isFinite(value) && value) {
+      const current = editing === 'p1' ? p1 : p2
+      const applied = Math.max(0, current + value) - current
+      if (applied) {
+        onSoundLp(editing, applied)
+        onChange(editing, value)
+      }
+    }
+    setEditing(null)
+    setAmount('')
+  }
   return <><section className={`lp-panel arena-stage active-${activePlayer}`}>
-    <LpPlayer id="p1" lp={p1} history={history} active={activePlayer === 'p1'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
-    <LpPlayer id="p2" lp={p2} history={history} active={activePlayer === 'p2'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
+    <LpPlayer id="p1" lp={p1} history={history} active={activePlayer === 'p1'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} onSoundLp={onSoundLp} />
+    <LpPlayer id="p2" lp={p2} history={history} active={activePlayer === 'p2'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} onSoundLp={onSoundLp} />
   </section>{editing && <Modal title={`Modifier les LP ${editing === 'p1' ? 'J1' : 'J2'}`} onClose={() => setEditing(null)}><div className="numpad"><input autoFocus inputMode="numeric" value={amount} onChange={event => setAmount(event.target.value)} placeholder="Ex. -1500 ou 500" /><button className="primary" onClick={apply}>Appliquer</button></div></Modal>}</>
 }

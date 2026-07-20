@@ -8,7 +8,7 @@ const gainAdjustments = [100, 500, 1000, 2000] as const
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const formatDelta = (value: number) => `${value > 0 ? '+' : ''}${value}`
 
-export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabled, onAdjust, onCustom }: { player: PlayerId; lp: number; last?: number; activePlayer: PlayerId; hapticsEnabled: boolean; onAdjust: (amount: number) => void; onCustom: () => void }) {
+export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabled, onAdjust, onCustom, onSoundLp }: { player: PlayerId; lp: number; last?: number; activePlayer: PlayerId; hapticsEnabled: boolean; onAdjust: (amount: number) => void; onCustom: () => void; onSoundLp: (player: PlayerId, amount: number) => void }) {
   const previousLp = useRef(lp)
   const displayedLp = useRef(lp)
   const [displayLp, setDisplayLp] = useState(lp)
@@ -56,6 +56,13 @@ export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabl
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(impactTimer); window.clearTimeout(feedbackTimer) }
   }, [hapticsEnabled, lp])
 
+  const adjust = (amount: number) => {
+    const applied = Math.max(0, lp + amount) - lp
+    if (!applied) return
+    onSoundLp(player, applied)
+    onAdjust(amount)
+  }
+
   return <article className={`score-duelist-panel ${player} ${isActive ? 'is-active' : ''} ${impact ? 'is-impact' : ''} ${visualFeedback ? feedback! < 0 ? 'is-damage' : 'is-heal' : ''}`} aria-label={`Zone de vie du joueur ${playerNumber}`}>
     {feedback !== null && <span className={`score-lp-float ${feedback < 0 ? 'loss' : 'gain'}`} aria-live="polite">{formatDelta(feedback)}</span>}
     {visualFeedback && feedback !== null && feedback < 0 && <i className="score-impact-wave" aria-hidden="true" />}
@@ -65,8 +72,8 @@ export function ScoreDuelistPanel({ player, lp, last, activePlayer, hapticsEnabl
     </header>
     <p className={`score-last-change ${last === undefined ? 'empty' : last < 0 ? 'loss' : 'gain'}`}>{last === undefined ? 'Aucune variation' : `${formatDelta(last)} LP récemment`}</p>
     <div className="score-life-bar" role="progressbar" aria-label={`Points de vie du joueur ${playerNumber}`} aria-valuenow={lp} aria-valuemin={0} aria-valuemax={8000}><i style={{ width: `${Math.min(100, Math.max(0, lp) / 80)}%` }} /></div>
-    <div className="score-lp-section"><span>Retirer des LP</span><div className="score-lp-grid">{lossAdjustments.map(amount => <LpActionButton key={amount} amount={amount} player={player} onPress={onAdjust} />)}</div></div>
-    <div className="score-lp-section"><span>Ajouter des LP</span><div className="score-lp-grid">{gainAdjustments.map(amount => <LpActionButton key={amount} amount={amount} player={player} onPress={onAdjust} />)}</div></div>
+    <div className="score-lp-section"><span>Retirer des LP</span><div className="score-lp-grid">{lossAdjustments.map(amount => <LpActionButton key={amount} amount={amount} player={player} onPress={adjust} />)}</div></div>
+    <div className="score-lp-section"><span>Ajouter des LP</span><div className="score-lp-grid">{gainAdjustments.map(amount => <LpActionButton key={amount} amount={amount} player={player} onPress={adjust} />)}</div></div>
     <button className="score-lp-custom" onClick={onCustom} aria-label={`Ajustement personnalisé des LP du joueur ${playerNumber}`}><SlidersHorizontal size={17} /> Ajustement personnalisé</button>
   </article>
 }
