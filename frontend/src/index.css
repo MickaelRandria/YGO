@@ -868,3 +868,51 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .score-duelist-value strong { font-size: 35px; }
   .score-timer { min-width: 78px; padding: 0 7px; }
 }
+
+/* Relief égyptien : une couche décorative stable, distincte des surfaces interactives. */
+.score-duel {
+  min-height: 100dvh;
+  z-index: 0;
+  isolation: isolate;
+  background: transparent;
+}
+
+.score-duel::before,
+.score-duel::after {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.score-duel::before {
+  z-index: -2;
+  background: url('/assets/ygo-egyptian-relief.jpg') 52% top / auto 115% no-repeat;
+  filter: grayscale(1) contrast(.9) brightness(.65);
+  opacity: .14;
+  transform: scale(1.02);
+}
+
+.score-duel::after {
+  z-index: -1;
+  background: linear-gradient(to bottom, rgb(7 8 8 / .68) 0%, rgb(7 8 8 / .76) 38%, rgb(7 8 8 / .9) 100%);
+  transition: background 420ms ease;
+}
+
+.score-duel.atmosphere-p1::after {
+  background: radial-gradient(circle at 20% 28%, rgb(255 157 36 / .11), transparent 42%), linear-gradient(to bottom, rgb(7 8 8 / .68) 0%, rgb(7 8 8 / .76) 38%, rgb(7 8 8 / .9) 100%);
+}
+
+.score-duel.atmosphere-p2::after {
+  background: radial-gradient(circle at 80% 28%, rgb(57 167 255 / .11), transparent 42%), linear-gradient(to bottom, rgb(7 8 8 / .68) 0%, rgb(7 8 8 / .76) 38%, rgb(7 8 8 / .9) 100%);
+}
+
+.score-duel .duel-arena-atmosphere { display: none; }
+
+@media (min-width: 431px) {
+  .score-duel::before { background-size: cover; background-position: center top; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-duel::after { transition: none; }
+}
