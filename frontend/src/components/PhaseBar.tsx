@@ -26,7 +26,7 @@ export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, hap
       <div className="phase-tools"><button className={`timer-button ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}>
         <Clock3 size={16} />
         {timerEnabled ? formatTime(elapsed) : 'Timer'}
-      </button><button className={`haptics-button ${hapticsEnabled ? 'active' : ''}`} onClick={onToggleHaptics} aria-pressed={hapticsEnabled} aria-label={hapticsEnabled ? 'Désactiver les vibrations' : 'Activer les vibrations'}>{hapticsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
+      </button><button className={`haptics-button ${hapticsEnabled ? 'active' : ''}`} onClick={onToggleHaptics} aria-pressed={hapticsEnabled} aria-label={hapticsEnabled ? 'Désactiver les sons et vibrations' : 'Activer les sons et vibrations'}>{hapticsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
     </header>
 
     <button className="phase-name" onClick={() => setPickerOpen(true)} aria-haspopup="dialog" aria-expanded={pickerOpen}>

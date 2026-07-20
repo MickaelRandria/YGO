@@ -28,7 +28,7 @@ export function ScorePhaseController({ turn, player, phase, turnStartedAt, timer
   return <>
     <section className="score-duel-header">
       <div className="score-turn-meta"><span>Mode score</span><strong>Tour {turn} · J{player === 'p1' ? '1' : '2'} actif</strong></div>
-      <div className="score-header-tools"><button className={`score-timer ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}><Clock3 size={16} />{timerEnabled ? formatTime(elapsed) : 'Timer'}</button><button className={`score-sound ${hapticsEnabled ? 'active' : ''}`} onClick={onToggleHaptics} aria-pressed={hapticsEnabled} aria-label={hapticsEnabled ? 'Désactiver les vibrations' : 'Activer les vibrations'}>{hapticsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
+      <div className="score-header-tools"><button className={`score-timer ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}><Clock3 size={16} />{timerEnabled ? formatTime(elapsed) : 'Timer'}</button><button className={`score-sound ${hapticsEnabled ? 'active' : ''}`} onClick={onToggleHaptics} aria-pressed={hapticsEnabled} aria-label={hapticsEnabled ? 'Désactiver les sons et vibrations' : 'Activer les sons et vibrations'}>{hapticsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
     </section>
     <section className="score-phase-controller">
       <button className="score-phase-carousel" onClick={() => setPickerOpen(true)} aria-haspopup="dialog" aria-expanded={pickerOpen}><small>{previous}</small><strong>{phase}</strong><small>{next}</small></button>
