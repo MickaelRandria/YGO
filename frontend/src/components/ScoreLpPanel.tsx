@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LpLog, PlayerId } from '../types'
+import { DuelScape } from './DuelScape'
 import { Modal } from './Modal'
 
 const lossAdjustments = [-100, -500, -1000, -2000] as const
@@ -47,6 +48,7 @@ function CompactLpPlayerCard({ player, lp, last, activePlayer, hapticsEnabled, o
   return <article className={`score-lp-player ${player} ${impact ? 'is-impact' : ''} ${visualFeedback ? feedback < 0 ? `is-damage damage-${Math.abs(feedback) >= 2000 ? 'heavy' : Math.abs(feedback) >= 1000 ? 'medium' : 'light'}` : 'is-heal' : ''}`}>
     {feedback !== null && <span className={`score-lp-float ${feedback < 0 ? 'loss' : 'gain'}`} aria-live="polite">{formatDelta(feedback)}</span>}
     {visualFeedback && feedback !== null && feedback < 0 && <i className="score-impact-wave" aria-hidden="true" />}
+    <DuelScape player={player} lp={lp} />
     <header>
       <span>Joueur {player === 'p1' ? '1' : '2'}</span>
       {activeTurn && <small>Actif</small>}

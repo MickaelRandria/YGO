@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LpLog, PlayerId } from '../types'
-import { DuelCreature } from './DuelCreature'
+import { DuelScape } from './DuelScape'
 import { Modal } from './Modal'
 
 type VisualState = 'dominant' | 'stable' | 'critical' | 'eliminated'
@@ -61,8 +61,9 @@ function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }:
     <header className="lp-player-header">
       <span>{id === 'p1' ? 'Joueur 1' : 'Joueur 2'}</span>
       {active && <small className="active-label">Actif</small>}
-      <span className="lp-state" role="status" aria-label={`État ${labelFor[visual]}`}><DuelCreature state={visual} /><small className="sr-only">{labelFor[visual]}</small></span>
+      <span className="lp-state" role="status" aria-label={`État ${labelFor[visual]}`}><small>{labelFor[visual]}</small></span>
     </header>
+    <DuelScape player={id} lp={lp} />
     <div className="lp-value"><strong className={lpTone(lp)}>{displayLp}</strong><span>LP</span></div>
     <small className={`lp-delta ${last === undefined ? 'empty-delta' : last < 0 ? 'loss' : 'gain'}`}>{labelFor[visual]} · {last === undefined ? 'aucune variation' : `${formatDelta(last)} LP récemment`}</small>
     <div className="life-bar" role="progressbar" aria-label={`Points de vie du ${id === 'p1' ? 'joueur 1' : 'joueur 2'}`} aria-valuenow={lp} aria-valuemin={0} aria-valuemax={8000}><i className={lpTone(lp)} style={{ width: `${Math.min(100, Math.max(0, lp) / 80)}%` }} /></div>
