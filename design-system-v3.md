@@ -27,9 +27,12 @@ hiérarchie visuelle principale.
 - Le noir crée les niveaux de profondeur ; les surfaces diffèrent peu.
 - J1 est orange feu et J2 bleu électrique. Ces couleurs servent aux halos,
   lignes de vie, bordures actives et retours d'action, jamais aux grands aplats.
-- Les cartes d'action LP sont gris sombre, compactes, et conservent une cible
-  tactile minimale de 44 px. Chaque rangée expose trois raccourcis (`100`,
-  `500`, `1K`) sans défilement ; le bouton `±` couvre les autres montants.
+- Les panneaux LP sont empilés, en pleine largeur : J1 puis J2. Chaque action
+  conserve une cible tactile minimale de 44 px. Les rangées fixes exposent
+  `100`, `500`, `1K` et `2K`, sans défilement ; l'ajustement personnalisé
+  couvre les autres montants.
+- Les gains reprennent la teinte du joueur concerné (orange J1, bleu J2) : le
+  vert ne sert pas de code principal pour éviter de mélanger les identités.
 - Les grandes zones (arène, sheet, modal et navigation) peuvent recevoir une
   ombre diffuse et un liseré interne. Les petits boutons n'en reçoivent pas.
 - Les animations expriment un changement réel : LP, phase, victoire ou impact.
@@ -37,14 +40,16 @@ hiérarchie visuelle principale.
 
 ## Écran Duel
 
-1. La phase est un carrousel central : phase courante blanche, voisines grisées,
-   trait orange lumineux.
-2. Le momentum est un axe orange/bleu avec repère `VS` et libellé d'avantage.
-3. Les deux zones LP restent visibles et utilisables. Le joueur actif gagne un
-   halo, une bordure et une ligne de vie plus lumineuse.
-4. Le journal est un aperçu d'un événement. Son contenu complet reste dans la
+1. L'entête Score regroupe tour, joueur actif, minuteur et vibrations sans
+   distraire des LP. La phase reste un carrousel central compact.
+2. J1 puis J2 occupent chacun un panneau pleine largeur avec une valeur LP,
+   une ligne de vie, deux rangées de quatre raccourcis et un ajustement libre.
+3. L'équilibre est un axe orange/bleu minimal placé sous les deux panneaux,
+   sans médaillon `VS`.
+4. Le joueur actif gagne un halo, une bordure et une ligne de vie plus lumineuse.
+5. Le journal est un aperçu d'un événement. Son contenu complet reste dans la
    bottom sheet existante.
-5. Les décors SVG originaux restent uniquement comme texture nocturne discrète.
+6. Les décors SVG originaux restent uniquement comme texture nocturne discrète.
 
 ## Écrans secondaires
 

@@ -701,3 +701,170 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media (max-width: 380px) {
   .score-lp-row, .lp-action-row { grid-template-columns: repeat(2, minmax(44px, 1fr)); }
 }
+
+/* Score mode: two full-width duelist panels. The legacy arena remains available in complete mode. */
+:root {
+  --score-space-1: 8px;
+  --score-space-2: 12px;
+  --score-space-3: 16px;
+  --score-radius: 18px;
+}
+
+.score-duel {
+  padding: 14px 16px calc(122px + env(safe-area-inset-bottom));
+  background: radial-gradient(circle at 14% 12%, rgb(255 157 46 / .07), transparent 26%), radial-gradient(circle at 86% 38%, rgb(57 167 255 / .07), transparent 29%), var(--bg-app);
+}
+
+.score-duel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--score-space-2);
+  margin-bottom: var(--score-space-2);
+}
+
+.score-turn-meta { display: grid; gap: 2px; min-width: 0; }
+.score-turn-meta span { color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.score-turn-meta strong { overflow: hidden; color: var(--ink); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.score-header-tools { display: flex; flex: 0 0 auto; gap: 6px; }
+.score-timer, .score-sound {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgb(255 255 255 / .08);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.score-timer { min-width: 88px; padding: 0 10px; }
+.score-sound { width: 42px; padding: 0; }
+.score-timer.active { border-color: rgb(57 167 255 / .34); background: var(--player-2-soft); color: var(--player-2); }
+.score-sound.active { color: var(--ink); }
+
+.score-phase-controller { position: relative; display: grid; gap: var(--score-space-1); margin-bottom: var(--score-space-3); }
+.score-phase-carousel {
+  display: grid;
+  min-height: 47px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / .07);
+  border-radius: 13px;
+  background: var(--surface-1);
+  color: var(--muted);
+}
+.score-phase-carousel small { overflow: hidden; color: var(--text-muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.score-phase-carousel small:last-child { text-align: right; }
+.score-phase-carousel strong { position: relative; padding-bottom: 4px; color: var(--ink); font-size: 17px; letter-spacing: -.3px; }
+.score-phase-carousel strong::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; border-radius: 999px; background: var(--player-1); box-shadow: 0 0 10px var(--player-1); content: ''; }
+.score-phase-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--score-space-1); }
+.score-next-phase, .score-end-turn {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgb(255 255 255 / .08);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  text-align: left;
+}
+.score-next-phase span, .score-end-turn span { display: grid; gap: 1px; }
+.score-next-phase small, .score-end-turn small { color: var(--muted); font-size: 10px; }
+.score-next-phase strong, .score-end-turn { font-size: 12px; }
+.score-end-turn { justify-content: flex-start; background: var(--surface-3); }
+.score-phase-picker {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / .1);
+  border-radius: var(--score-radius);
+  background: var(--surface-2);
+  box-shadow: 0 18px 40px rgb(0 0 0 / .58);
+}
+.score-phase-picker > div { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.score-phase-picker > div button { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: var(--surface-3); color: var(--ink); }
+.score-phase-picker section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.score-phase-picker section button { min-height: 40px; border: 1px solid rgb(255 255 255 / .07); border-radius: 9px; background: var(--surface-3); color: var(--ink); font-size: 11px; }
+.score-phase-picker section button.active { border-color: rgb(255 157 46 / .55); background: var(--player-1); color: #080909; }
+
+.score-player-area { display: grid; gap: var(--score-space-3); padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.score-duelist-panel {
+  --panel-accent: var(--player-1);
+  --panel-soft: var(--player-1-soft);
+  position: relative;
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid rgb(255 255 255 / .08);
+  border-radius: var(--score-radius);
+  background: radial-gradient(circle at 7% 0%, var(--panel-soft), transparent 37%), var(--surface-1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .035);
+  isolation: isolate;
+}
+.score-duelist-panel.p2 { --panel-accent: var(--player-2); --panel-soft: var(--player-2-soft); background: radial-gradient(circle at 93% 0%, var(--panel-soft), transparent 37%), var(--surface-1); }
+.score-duelist-panel.is-active { border-color: color-mix(in srgb, var(--panel-accent), rgb(255 255 255 / .18) 26%); box-shadow: inset 0 -2px 0 var(--panel-accent), inset 0 1px 0 rgb(255 255 255 / .05), 0 10px 24px rgb(0 0 0 / .22); }
+.score-duelist-panel.is-impact { transform: translateY(1px); }
+.score-duelist-top { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
+.score-duelist-top > div:first-child { display: flex; align-items: center; gap: 7px; padding-top: 4px; }
+.score-duelist-top > div:first-child > span { color: var(--panel-accent); font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.score-duelist-top small { padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--panel-accent), transparent 46%); border-radius: 999px; background: var(--panel-soft); color: var(--panel-accent); font-size: 9px; font-weight: 900; }
+.score-duelist-value { display: flex; align-items: baseline; gap: 5px; }
+.score-duelist-value strong { color: var(--ink); font-size: clamp(34px, 10.2vw, 46px); letter-spacing: -2px; line-height: .9; }
+.score-duelist-value span { color: var(--muted); font-size: 11px; font-weight: 800; }
+.score-last-change { min-height: 14px; margin: -2px 0 0; color: var(--muted); font-size: 10px; font-weight: 700; }
+.score-last-change.loss { color: var(--danger); }.score-last-change.gain { color: var(--panel-accent); }
+.score-life-bar { height: 5px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / .1); }
+.score-life-bar i { display: block; height: 100%; border-radius: inherit; background: var(--panel-accent); box-shadow: 0 0 10px var(--panel-accent); transition: width 260ms ease; }
+.score-lp-section { display: grid; gap: 6px; }
+.score-lp-section > span { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+.score-lp-grid { display: grid; grid-template-columns: repeat(4, minmax(44px, 1fr)); gap: 7px; }
+.score-lp-action {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid rgb(255 255 255 / .08);
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .045);
+  font-size: 12px;
+  font-weight: 900;
+}
+.score-lp-action.gain { border-color: color-mix(in srgb, var(--panel-accent), transparent 58%); background: var(--panel-soft); color: var(--panel-accent); }
+.score-lp-action:active, .score-lp-custom:active { transform: scale(.97); }
+.score-lp-custom { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 7px; border: 1px solid color-mix(in srgb, var(--panel-accent), transparent 54%); border-radius: 10px; background: transparent; color: var(--panel-accent); font-size: 12px; font-weight: 850; }
+.score-lp-float { z-index: 3; background: var(--surface-3); color: var(--ink); }.score-lp-float.gain { background: var(--panel-accent); color: #080909; }
+.score-impact-wave { border-color: var(--panel-accent); }
+
+.score-balance { display: grid; gap: 8px; padding: 0 2px; }
+.score-balance-head { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 10px; font-weight: 800; }
+.score-balance-head strong { overflow: hidden; color: var(--muted); font-size: 10px; font-weight: 800; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.score-balance-track { position: relative; display: flex; height: 4px; overflow: visible; border-radius: 999px; background: var(--player-2); }
+.score-balance-p1 { width: var(--balance-frontier); border-radius: inherit; background: var(--player-1); box-shadow: 0 0 10px rgb(255 157 46 / .42); transition: width 260ms ease; }
+.score-balance-p2 { flex: 1; border-radius: inherit; background: var(--player-2); box-shadow: 0 0 10px rgb(57 167 255 / .36); }
+.score-balance-track b { position: absolute; top: 50%; left: var(--balance-frontier); width: 8px; height: 8px; border: 2px solid var(--surface-1); border-radius: 50%; transform: translate(-50%, -50%); background: var(--ink); }
+
+.score-duel .duel-quick-actions { margin-top: 16px; }
+.score-duel .duel-quick-actions button { min-height: 46px; border-radius: 11px; }
+.score-duel .duel-journal { margin-top: 16px; border-radius: var(--score-radius); }
+.score-duel .journal-compact .journal-entry:not(:first-child) { display: block; }
+
+@media (max-width: 380px) {
+  .score-duel { padding-right: 12px; padding-left: 12px; }
+  .score-duelist-panel { padding: 14px 12px; }
+  .score-lp-grid { gap: 5px; }
+  .score-lp-action { font-size: 11px; }
+  .score-duelist-value strong { font-size: 35px; }
+  .score-timer { min-width: 78px; padding: 0 7px; }
+}
