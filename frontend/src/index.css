@@ -124,11 +124,14 @@ h3 { font-size: 17px; font-weight: 800; }
 
 .phase-wrap { position: relative; margin-bottom: 16px; padding: 20px; border-radius: 28px; background: var(--surface-neutral); }
 .phase-header { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: 12px; }
+.phase-tools { display: inline-flex; flex: 0 0 auto; gap: 6px; }
 .phase-turn { display: flex; align-items: baseline; gap: 8px; }
 .turn { color: var(--surface-coral); font-size: 22px; font-weight: 800; letter-spacing: -1px; }
 .player-pill { color: var(--ink); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .turn-stars { display: inline-flex; gap: 2px; color: var(--surface-coral); }
 .timer-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; padding: 0 12px; background: var(--surface-soft); color: var(--ink); font-size: 11px; font-weight: 800; }
+.haptics-button { display: grid; width: 44px; min-width: 44px; min-height: 44px; place-items: center; border-radius: 12px; background: var(--surface-soft); color: var(--muted); }
+.haptics-button.active { background: var(--ink); color: var(--white); }
 .timer-button.active { background: var(--accent-blue); color: var(--white); }
 .phase-name { display: grid; width: 100%; min-height: 78px; gap: 6px; margin-top: 10px; border-radius: 20px; padding: 12px 16px; background: var(--ink); color: var(--white); text-align: left; }
 .phase-name > span:first-child { color: rgb(255 255 255 / .62); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
@@ -161,6 +164,7 @@ h3 { font-size: 17px; font-weight: 800; }
 .score-mode-label { grid-column: 1 / -1; color: var(--surface-coral); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .score-phase-wrap .turn { font-size: 18px; }
 .score-phase-wrap .timer-button { min-height: 42px; }
+.score-phase-wrap .haptics-button { width: 42px; min-width: 42px; min-height: 42px; }
 .score-phase-wrap .phase-name { min-height: 70px; margin-top: 8px; padding: 10px 16px; background: var(--surface-neutral); color: var(--ink); }
 .score-phase-wrap .phase-name > span:first-child { color: var(--muted); }
 .score-phase-wrap .phase-carousel small { color: var(--muted); }
@@ -171,10 +175,22 @@ h3 { font-size: 17px; font-weight: 800; }
 .score-phase-wrap .phase-help { margin-top: 9px; }
 
 .score-player-area { display: grid; gap: 10px; }
+.momentum-gauge { display: grid; gap: 6px; margin: 0 0 12px; color: var(--muted); }
+.momentum-track { position: relative; height: 10px; overflow: visible; border-radius: 10px; background: var(--surface-coral); }
+.momentum-track i { position: absolute; top: 0; bottom: 0; }
+.momentum-j1 { left: 0; width: var(--momentum-frontier); border-radius: 10px 0 0 10px; background: var(--surface-amber); transition: width 600ms ease-out; }
+.momentum-j2 { right: 0; width: calc(100% - var(--momentum-frontier)); border-radius: 0 10px 10px 0; background: var(--surface-coral); transition: width 600ms ease-out; }
+.momentum-track b { position: absolute; top: 50%; left: var(--momentum-frontier); width: 14px; height: 14px; border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); background: var(--ink); transition: left 600ms ease-out; }
+.momentum-gauge small { color: var(--ink); font-size: 11px; font-weight: 800; text-align: center; }
 .score-dual-arena { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
 .score-lp-player { position: relative; min-width: 0; overflow: hidden; padding: 14px 12px 12px; border-radius: 28px; background: var(--surface-amber); color: var(--ink); }
 .score-lp-player.p2 { background: var(--surface-coral); color: var(--white); }
 .score-lp-player.is-impact { animation: score-lp-impact 180ms ease-out; }
+.score-lp-player.is-impact.is-damage.damage-light { animation: lp-shake-light 250ms ease-in-out; }
+.score-lp-player.is-impact.is-damage.damage-medium { animation: lp-shake-medium 250ms ease-in-out; }
+.score-lp-player.is-impact.is-damage.damage-heavy { animation: lp-shake-heavy 250ms ease-in-out; }
+.score-lp-player.is-damage .score-lp-value strong { animation: lp-number-hit 300ms ease-out; }
+.score-lp-player.is-heal .score-lp-value strong { animation: lp-number-heal 300ms ease-out; }
 .score-lp-player::before { position: absolute; top: -64px; right: -52px; width: 150px; height: 150px; border-radius: 50%; background: var(--ink); opacity: .08; content: ''; }
 .score-lp-player.p2::before { background: var(--white); opacity: .15; }
 .score-lp-player > * { position: relative; z-index: 1; }
@@ -205,6 +221,8 @@ h3 { font-size: 17px; font-weight: 800; }
 .score-lp-player.p2 .score-lp-controls .score-lp-gain { background: var(--surface-success); color: var(--white); }
 .score-lp-float { position: absolute; z-index: 3; top: 55px; left: 50%; border-radius: 12px; padding: 6px 8px; transform: translateX(-50%); background: var(--ink); color: var(--white); font-size: 16px; font-weight: 800; animation: lp-float 700ms ease-out both; pointer-events: none; }
 .score-lp-float.gain { background: var(--white); color: var(--ink); }
+.score-impact-wave, .lp-impact-wave { position: absolute; z-index: 0; top: 42%; left: 50%; width: 54px; height: 54px; border: 4px solid var(--surface-amber); border-radius: 50%; transform: translate(-50%, -50%); opacity: .4; pointer-events: none; animation: lp-impact-wave 400ms ease-out both; }
+.score-lp-player.p2 .score-impact-wave, .lp-player.p2 .lp-impact-wave { border-color: var(--surface-coral); }
 .score-advantage { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 4px 4px 0; color: var(--muted); font-size: 11px; font-weight: 800; }
 .score-advantage i { position: relative; height: 4px; overflow: hidden; border-radius: 5px; background: rgb(20 20 20 / .15); }
 .score-advantage i::after { position: absolute; top: 0; bottom: 0; width: 50%; border-radius: inherit; background: var(--ink); content: ''; transition: left var(--motion-standard) ease, right var(--motion-standard) ease, width var(--motion-standard) ease; }
@@ -225,6 +243,11 @@ h3 { font-size: 17px; font-weight: 800; }
 .lp-player.is-active { z-index: 2; transform: translateY(-4px) scale(1.035); }
 .lp-player.is-inactive { opacity: .84; transform: translateY(5px) scale(.96); }
 .lp-player.is-impact { animation: lp-impact var(--motion-standard) ease-out; }
+.lp-player.is-impact.is-damage.damage-light { animation: lp-shake-light 250ms ease-in-out; }
+.lp-player.is-impact.is-damage.damage-medium { animation: lp-shake-medium 250ms ease-in-out; }
+.lp-player.is-impact.is-damage.damage-heavy { animation: lp-shake-heavy 250ms ease-in-out; }
+.lp-player.is-damage .lp-value strong { animation: lp-number-hit 300ms ease-out; }
+.lp-player.is-heal .lp-value strong { animation: lp-number-heal 300ms ease-out; }
 .lp-player-header { display: grid; grid-template-columns: 1fr auto auto; min-height: 36px; align-items: center; gap: 5px; }
 .lp-player-header > span:first-child { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
 .active-label { border-radius: 8px; padding: 4px 5px; background: var(--ink); color: var(--white); font-size: 10px; font-weight: 800; text-transform: uppercase; }
@@ -312,6 +335,14 @@ h3 { font-size: 17px; font-weight: 800; }
 .manual-end { display: grid; gap: 12px; }
 .manual-end label { display: grid; gap: 6px; font-size: 12px; font-weight: 800; }
 .duel-summary header { padding: 20px; border-radius: 24px; background: var(--surface-amber); }
+.winner-hero { display: grid; justify-items: center; padding: 28px 20px; border-radius: 28px; background: var(--surface-amber); color: var(--ink); text-align: center; }
+.winner-hero.p2 { background: var(--surface-coral); color: var(--white); }
+.winner-hero > div { display: grid; width: 112px; height: 112px; margin-bottom: 12px; place-items: center; border-radius: 50%; background: var(--ink); color: var(--white); }
+.winner-hero.p2 > div { background: var(--white); color: var(--ink); }
+.winner-hero .duel-creature { width: 76px; height: 76px; }
+.winner-hero > span { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.winner-hero h1 { margin: 5px 0 3px; font-size: 28px; }
+.winner-hero p { margin: 0; font-size: 13px; font-weight: 700; }
 .duel-summary header h1 { margin-bottom: 4px; }
 .duel-summary header p { margin: 0; font-size: 13px; }
 .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; }
@@ -321,6 +352,19 @@ h3 { font-size: 17px; font-weight: 800; }
 .summary-grid strong { margin-top: 4px; font-size: 16px; }
 .summary-journal { width: 100%; justify-content: center; margin-bottom: 10px; }
 
+.duel-screen { position: relative; isolation: isolate; }
+.duel-screen > :not(.duel-arena-atmosphere):not(.critical-zone):not(.victory-impact):not(.turn-transition) { position: relative; z-index: 1; }
+.duel-arena-atmosphere { position: absolute; z-index: 0; inset: 0; opacity: 0; pointer-events: none; transition: background 2400ms ease, opacity 2400ms ease; }
+.atmosphere-p1 .duel-arena-atmosphere { background: var(--surface-amber); opacity: .05; }
+.atmosphere-p2 .duel-arena-atmosphere { background: var(--surface-coral); opacity: .05; }
+.atmosphere-p1.critical .duel-arena-atmosphere { background: var(--surface-amber); opacity: .1; }
+.atmosphere-p2.critical .duel-arena-atmosphere { background: var(--surface-coral); opacity: .1; }
+.critical-zone { position: absolute; z-index: 2; inset: 0; border: 4px solid var(--surface-amber); border-radius: 18px; opacity: .55; pointer-events: none; animation: critical-zone-pulse 2500ms ease-in-out infinite; }
+.critical-zone.p2 { border-color: var(--surface-coral); }
+.victory-impact { position: absolute; z-index: 25; inset: 0; display: grid; place-items: center; border: 0; background: rgb(240 168 46 / .2); color: var(--ink); font-size: 13px; font-weight: 800; animation: victory-flash 800ms ease-out both; }
+.victory-impact.p2 { background: rgb(242 99 75 / .2); color: var(--white); }
+.victory-impact span { padding: 9px 12px; border-radius: 12px; background: var(--ink); color: var(--white); opacity: 0; animation: victory-skip 800ms ease-out both; }
+.victory-p1 .lp-player.p2, .victory-p1 .score-lp-player.p2, .victory-p2 .lp-player.p1, .victory-p2 .score-lp-player.p1 { filter: grayscale(1); transition: filter 600ms ease; }
 .modal-backdrop { position: fixed; z-index: 20; inset: 0; display: flex; align-items: end; justify-content: center; background: rgb(20 20 20 / .6); }
 .turn-transition { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; perspective: 900px; pointer-events: none; animation: turn-transition-fade 760ms ease-out both; }
 .turn-flip-card { position: relative; width: 168px; height: 236px; transform-style: preserve-3d; animation: turn-card-flip 720ms cubic-bezier(.2, .8, .25, 1) both; }
@@ -371,10 +415,20 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @keyframes phase-arrive { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes lp-float { 0% { opacity: 0; transform: translate(-50%, 14px) scale(.9); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -42px) scale(1.05); } }
 @keyframes lp-impact { 0%, 100% { transform: translateY(-4px) scale(1.035); } 38% { transform: translateY(-7px) scale(1.07); } }
+@keyframes lp-shake-light { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 50% { transform: translateX(2px); } 75% { transform: translateX(-2px); } }
+@keyframes lp-shake-medium { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-4px); } }
+@keyframes lp-shake-heavy { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
+@keyframes lp-number-hit { 0% { transform: scale(1); } 42% { transform: scale(.92); } 100% { transform: scale(1); } }
+@keyframes lp-number-heal { 0% { transform: scale(1); color: inherit; } 45% { transform: scale(1.05); color: var(--surface-success); } 100% { transform: scale(1); color: inherit; } }
+@keyframes lp-impact-wave { 0% { transform: translate(-50%, -50%) scale(.3); opacity: .45; } 100% { transform: translate(-50%, -50%) scale(2.7); opacity: 0; } }
+@keyframes critical-zone-pulse { 0%, 100% { opacity: .4; } 50% { opacity: .7; } }
+@keyframes victory-flash { 0% { opacity: .2; } 25% { opacity: .32; } 100% { opacity: .08; } }
+@keyframes victory-skip { 0%, 60% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes journal-arrive { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes turn-transition-fade { 0% { opacity: 0; } 12%, 76% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes turn-card-flip { 0% { transform: rotateY(0deg) scale(.82); } 18% { transform: rotateY(0deg) scale(1); } 100% { transform: rotateY(180deg) scale(1); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@media (prefers-reduced-motion: reduce) { .critical-zone { animation: none !important; opacity: .6; } .lp-player.is-damage, .score-lp-player.is-damage, .lp-player.is-heal, .score-lp-player.is-heal { animation: none !important; } }
 @keyframes score-lp-impact { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.018); } }
 @media (max-width: 350px) { .duel-quick-actions { grid-template-columns: 1fr; } }
 @media (min-width: 481px) { body { padding: 18px 0; } .app { border-radius: 28px; box-shadow: 0 2px 12px rgb(20 20 20 / .06); } }

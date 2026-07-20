@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, Clock3, Flag, Star, X } from 'lucide-react'
+import { ChevronRight, Clock3, Flag, Star, Volume2, VolumeX, X } from 'lucide-react'
 import type { Phase, PlayerId } from '../types'
 
 const phases: Phase[] = ['Draw', 'Standby', 'Main 1', 'Battle', 'Main 2', 'End']
 const help: Record<Phase, string> = { Draw: 'Le joueur actif pioche 1 carte.', Standby: 'Résolution des effets pendant la Standby Phase.', 'Main 1': 'Invocation normale, poser des monstres, activer Magies/Pièges et invocations spéciales.', Battle: 'Déclarer des attaques. Pas au premier tour du J1.', 'Main 2': 'Comme Main 1, sauf invocation normale déjà utilisée.', End: 'Résoudre les effets de fin et défausser si plus de 6 cartes en main.' }
 const formatTime = (milliseconds: number) => `${Math.floor(milliseconds / 60000).toString().padStart(2, '0')}:${Math.floor(milliseconds / 1000 % 60).toString().padStart(2, '0')}`
 
-export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, onNext, onEndTurn, onSelectPhase, onToggleTimer, compact = false }: { turn: number; player: PlayerId; phase: Phase; turnStartedAt: number; timerEnabled: boolean; onNext: () => void; onEndTurn: () => void; onSelectPhase: (phase: Phase) => void; onToggleTimer: () => void; compact?: boolean }) {
+export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, hapticsEnabled, onNext, onEndTurn, onSelectPhase, onToggleTimer, onToggleHaptics, compact = false }: { turn: number; player: PlayerId; phase: Phase; turnStartedAt: number; timerEnabled: boolean; hapticsEnabled: boolean; onNext: () => void; onEndTurn: () => void; onSelectPhase: (phase: Phase) => void; onToggleTimer: () => void; onToggleHaptics: () => void; compact?: boolean }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const holdTimer = useRef<number | undefined>(undefined)
@@ -23,10 +23,10 @@ export function PhaseBar({ turn, player, phase, turnStartedAt, timerEnabled, onN
       <div className="phase-turn">
         {compact && <span className="score-mode-label">Mode score</span>}<span className="turn">T{turn}</span><span className="player-pill">{player === 'p1' ? 'J1 actif' : 'J2 actif'}</span>{!compact && <span className="turn-stars" aria-label={`Tour ${turn}`}><span className="sr-only">Tour {turn}</span>{Array.from({ length: Math.min(turn, 5) }, (_, index) => <Star key={index} size={11} fill="currentColor" aria-hidden="true" />)}</span>}
       </div>
-      <button className={`timer-button ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}>
+      <div className="phase-tools"><button className={`timer-button ${timerEnabled ? 'active' : ''}`} onClick={onToggleTimer} aria-pressed={timerEnabled}>
         <Clock3 size={16} />
         {timerEnabled ? formatTime(elapsed) : 'Timer'}
-      </button>
+      </button><button className={`haptics-button ${hapticsEnabled ? 'active' : ''}`} onClick={onToggleHaptics} aria-pressed={hapticsEnabled} aria-label={hapticsEnabled ? 'Désactiver les vibrations' : 'Activer les vibrations'}>{hapticsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
     </header>
 
     <button className="phase-name" onClick={() => setPickerOpen(true)} aria-haspopup="dialog" aria-expanded={pickerOpen}>

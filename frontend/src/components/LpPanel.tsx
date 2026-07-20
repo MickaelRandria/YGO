@@ -12,7 +12,7 @@ const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('
 const lossAdjustments = [-100, -500, -1000, -2000] as const
 const gainAdjustments = [100, 500, 1000, 2000] as const
 
-function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void }) {
+function LpPlayer({ id, lp, history, active, hapticsEnabled, onChange, onEdit }: { id: PlayerId; lp: number; history: LpLog[]; active: boolean; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void; onEdit: (player: PlayerId) => void }) {
   const visual = visualFor(lp)
   const previousLp = useRef(lp)
   const frame = useRef<number | null>(null)
@@ -20,13 +20,16 @@ function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId;
   const [feedback, setFeedback] = useState<number | null>(null)
   const [impact, setImpact] = useState(false)
   const last = history.find(item => item.player === id)?.difference
+  const visualFeedback = feedback !== null && !reducedMotion()
 
   useEffect(() => {
     const from = previousLp.current
     if (from === lp) return
     previousLp.current = lp
-    setFeedback(lp - from)
-    setImpact(true)
+    const difference = lp - from
+    setFeedback(difference)
+    setImpact(!reducedMotion())
+    if (difference < 0 && hapticsEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(Math.abs(difference) >= 2000 ? [30, 40, 30] : Math.abs(difference) >= 1000 ? 30 : 15)
     const impactTimer = window.setTimeout(() => setImpact(false), 280)
     const feedbackTimer = window.setTimeout(() => setFeedback(null), 700)
     if (reducedMotion()) {
@@ -46,15 +49,15 @@ function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId;
       window.clearTimeout(impactTimer)
       window.clearTimeout(feedbackTimer)
     }
-  }, [lp])
+  }, [hapticsEnabled, lp])
 
   const adjust = (amount: number) => {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(10)
     onChange(id, amount)
   }
 
-  return <article className={`lp-player ${id} state-${visual} ${active ? 'is-active' : 'is-inactive'} ${impact ? 'is-impact' : ''}`} aria-current={active ? 'true' : undefined}>
+  return <article className={`lp-player ${id} state-${visual} ${active ? 'is-active' : 'is-inactive'} ${impact ? 'is-impact' : ''} ${visualFeedback ? feedback < 0 ? `is-damage damage-${Math.abs(feedback) >= 2000 ? 'heavy' : Math.abs(feedback) >= 1000 ? 'medium' : 'light'}` : 'is-heal' : ''}`} aria-current={active ? 'true' : undefined}>
     {feedback !== null && <span className={`lp-float ${feedback < 0 ? 'loss' : 'gain'}`} aria-live="polite">{formatDelta(feedback)}</span>}
+    {visualFeedback && feedback !== null && feedback < 0 && <i className="lp-impact-wave" aria-hidden="true" />}
     <header className="lp-player-header">
       <span>{id === 'p1' ? 'Joueur 1' : 'Joueur 2'}</span>
       {active && <small className="active-label">Actif</small>}
@@ -71,15 +74,12 @@ function LpPlayer({ id, lp, history, active, onChange, onEdit }: { id: PlayerId;
   </article>
 }
 
-export function LpPanel({ p1, p2, history, activePlayer, onChange }: { p1: number; p2: number; history: LpLog[]; activePlayer: PlayerId; onChange: (player: PlayerId, amount: number) => void }) {
+export function LpPanel({ p1, p2, history, activePlayer, hapticsEnabled, onChange }: { p1: number; p2: number; history: LpLog[]; activePlayer: PlayerId; hapticsEnabled: boolean; onChange: (player: PlayerId, amount: number) => void }) {
   const [editing, setEditing] = useState<PlayerId | null>(null)
   const [amount, setAmount] = useState('')
-  const gap = p1 - p2
   const apply = () => { const value = Number(amount); if (editing && Number.isFinite(value) && value) onChange(editing, value); setEditing(null); setAmount('') }
-  const balance = gap === 0 ? 'Égalité' : `Avantage ${gap > 0 ? 'J1' : 'J2'}`
   return <><section className={`lp-panel arena-stage active-${activePlayer}`}>
-    <LpPlayer id="p1" lp={p1} history={history} active={activePlayer === 'p1'} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
-    <div className="arena-balance" aria-label={gap === 0 ? 'Égalité parfaite' : `${balance}, ${Math.abs(gap)} points de vie`}><strong>VS</strong><span>{gap === 0 ? 'Égalité' : `${gap > 0 ? '+' : '−'}${Math.abs(gap)}`}</span></div>
-    <LpPlayer id="p2" lp={p2} history={history} active={activePlayer === 'p2'} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
+    <LpPlayer id="p1" lp={p1} history={history} active={activePlayer === 'p1'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
+    <LpPlayer id="p2" lp={p2} history={history} active={activePlayer === 'p2'} hapticsEnabled={hapticsEnabled} onChange={onChange} onEdit={player => { setEditing(player); setAmount('-') }} />
   </section>{editing && <Modal title={`Modifier les LP ${editing === 'p1' ? 'J1' : 'J2'}`} onClose={() => setEditing(null)}><div className="numpad"><input autoFocus inputMode="numeric" value={amount} onChange={event => setAmount(event.target.value)} placeholder="Ex. -1500 ou 500" /><button className="primary" onClick={apply}>Appliquer</button></div></Modal>}</>
 }
