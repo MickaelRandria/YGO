@@ -916,3 +916,202 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media (prefers-reduced-motion: reduce) {
   .score-duel::after { transition: none; }
 }
+
+/* Arena of obsidian: score mode owns these tokens; complete mode keeps its existing system. */
+.app-score-mode {
+  --bg-void: #060706;
+  --bg-obsidian: #0B0C0B;
+  --surface-deep: rgb(12 13 12 / .94);
+  --surface-main: rgb(18 19 18 / .95);
+  --surface-raised: rgb(25 26 24 / .97);
+  --surface-control: rgb(32 33 30 / .98);
+  --surface-control-hover: rgb(42 43 39 / .98);
+  --text-primary: #F3EFE3;
+  --text-secondary: #B7B09F;
+  --text-muted: #777267;
+  --text-disabled: #56534C;
+  --player-1: #D8A63A;
+  --player-1-bright: #F0C45B;
+  --player-1-soft: rgb(216 166 58 / .14);
+  --player-1-border: rgb(216 166 58 / .48);
+  --player-2: #3189A8;
+  --player-2-bright: #55B3D2;
+  --player-2-soft: rgb(49 137 168 / .15);
+  --player-2-border: rgb(49 137 168 / .48);
+  --danger: #B6544F;
+  --danger-bright: #D46A64;
+  --danger-soft: rgb(182 84 79 / .14);
+  --divider: rgb(243 239 227 / .08);
+  --border-subtle: rgb(243 239 227 / .10);
+  --highlight-top: rgb(255 255 255 / .055);
+  --surface-1: var(--surface-main);
+  --surface-2: var(--surface-raised);
+  --surface-3: var(--surface-control);
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --white: var(--text-primary);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-major: 24px;
+  --radius-panel: 20px;
+  --radius-action: 14px;
+  --radius-control: 11px;
+  --radius-badge: 999px;
+  --score-active-accent: var(--player-1);
+  --score-active-soft: var(--player-1-soft);
+  font-family: 'Sora', system-ui, sans-serif;
+}
+
+.app-score-mode.score-active-p2 { --score-active-accent: var(--player-2); --score-active-soft: var(--player-2-soft); }
+.app-score-mode .score-duel,
+.app-score-mode .bottom-nav { font-family: inherit; }
+
+.app-score-mode .score-duel {
+  padding: var(--space-4) var(--space-4) calc(134px + env(safe-area-inset-bottom));
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.app-score-mode .score-duel::before {
+  background-position: 52% top;
+  filter: grayscale(1) brightness(.62) contrast(.92);
+  opacity: .15;
+}
+
+.app-score-mode .score-duel::after {
+  background: linear-gradient(to bottom, rgb(6 7 6 / .58) 0%, rgb(6 7 6 / .72) 42%, rgb(6 7 6 / .9) 100%);
+}
+.app-score-mode .score-duel.atmosphere-p1::after { background: radial-gradient(circle at 20% 28%, rgb(216 166 58 / .11), transparent 42%), linear-gradient(to bottom, rgb(6 7 6 / .58) 0%, rgb(6 7 6 / .72) 42%, rgb(6 7 6 / .9) 100%); }
+.app-score-mode .score-duel.atmosphere-p2::after { background: radial-gradient(circle at 80% 28%, rgb(49 137 168 / .11), transparent 42%), linear-gradient(to bottom, rgb(6 7 6 / .58) 0%, rgb(6 7 6 / .72) 42%, rgb(6 7 6 / .9) 100%); }
+
+.app-score-mode .score-duel-header { margin-bottom: var(--space-3); }
+.app-score-mode .score-turn-meta { gap: var(--space-1); }
+.app-score-mode .score-turn-meta span { color: var(--text-muted); font-size: 11px; font-weight: 600; letter-spacing: .11em; }
+.app-score-mode .score-turn-meta strong { color: var(--text-primary); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.app-score-mode .score-header-tools { gap: var(--space-2); }
+.app-score-mode .score-timer,
+.app-score-mode .score-sound {
+  min-height: 44px;
+  height: 44px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-action);
+  background: var(--surface-raised);
+  box-shadow: inset 0 1px 0 var(--highlight-top);
+  color: var(--text-secondary);
+}
+.app-score-mode .score-timer { min-width: 92px; font-variant-numeric: tabular-nums; }
+.app-score-mode .score-sound { width: 44px; }
+.app-score-mode .score-timer.active { border-color: var(--player-2-border); background: var(--player-2-soft); color: var(--player-2-bright); }
+.app-score-mode .score-sound.active { color: var(--text-primary); }
+
+.app-score-mode .score-phase-controller { gap: var(--space-2); margin-bottom: var(--space-4); }
+.app-score-mode .score-phase-carousel {
+  min-height: 66px;
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-major);
+  background: var(--surface-deep);
+  box-shadow: 0 18px 50px rgb(0 0 0 / .26), inset 0 1px 0 var(--highlight-top);
+}
+.app-score-mode .score-phase-carousel small { color: var(--text-muted); font-size: 11px; font-weight: 500; }
+.app-score-mode .score-phase-carousel strong { color: var(--text-primary); font-size: clamp(28px, 8vw, 36px); font-weight: 700; line-height: 1; }
+.app-score-mode .score-phase-carousel strong::after { background: var(--score-active-accent); box-shadow: none; }
+.app-score-mode .score-phase-actions { gap: var(--space-2); }
+.app-score-mode .score-next-phase,
+.app-score-mode .score-end-turn {
+  min-height: 52px;
+  border-color: transparent;
+  border-radius: var(--radius-action);
+  background: var(--surface-raised);
+  box-shadow: inset 0 1px 0 var(--highlight-top);
+}
+.app-score-mode .score-next-phase { box-shadow: inset 3px 0 0 var(--score-active-accent), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-next-phase strong,
+.app-score-mode .score-end-turn { color: var(--text-primary); font-size: 13px; font-weight: 700; }
+.app-score-mode .score-next-phase small,
+.app-score-mode .score-end-turn small { color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+.app-score-mode .score-phase-picker { border-color: var(--border-subtle); border-radius: var(--radius-panel); background: var(--surface-main); box-shadow: 0 18px 50px rgb(0 0 0 / .4), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-phase-picker > div button,
+.app-score-mode .score-phase-picker section button { border-color: transparent; background: var(--surface-control); color: var(--text-primary); }
+.app-score-mode .score-phase-picker section button.active { border-color: transparent; background: var(--score-active-accent); color: var(--bg-void); }
+
+.app-score-mode .score-player-area { gap: var(--space-4); }
+.app-score-mode .score-duelist-panel {
+  gap: var(--space-2);
+  padding: 18px;
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background: radial-gradient(circle at 8% 0%, var(--panel-soft), transparent 34%), var(--surface-main);
+  box-shadow: 0 18px 50px rgb(0 0 0 / .26), inset 0 1px 0 var(--highlight-top);
+}
+.app-score-mode .score-duelist-panel.p1 { --panel-accent: var(--player-1); --panel-accent-bright: var(--player-1-bright); --panel-soft: var(--player-1-soft); --panel-border: var(--player-1-border); }
+.app-score-mode .score-duelist-panel.p2 { --panel-accent: var(--player-2); --panel-accent-bright: var(--player-2-bright); --panel-soft: var(--player-2-soft); --panel-border: var(--player-2-border); background: radial-gradient(circle at 92% 0%, var(--panel-soft), transparent 34%), var(--surface-main); }
+.app-score-mode .score-duelist-panel.is-active { border-color: var(--panel-border); box-shadow: 0 18px 45px rgb(0 0 0 / .25), 0 0 32px var(--panel-soft), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-duelist-top { gap: var(--space-3); }
+.app-score-mode .score-duelist-top > div:first-child { gap: 7px; }
+.app-score-mode .score-duelist-top > div:first-child > span { color: var(--panel-accent-bright); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.app-score-mode .score-duelist-top small { border-color: var(--panel-border); background: var(--panel-soft); color: var(--panel-accent-bright); font-weight: 700; }
+.app-score-mode .score-duelist-value { gap: 6px; }
+.app-score-mode .score-duelist-value strong { color: var(--text-primary); font-size: clamp(46px, 12vw, 58px); font-weight: 800; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
+.app-score-mode .score-duelist-value span { color: var(--text-secondary); font-weight: 600; }
+.app-score-mode .score-last-change { margin: 0; color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+.app-score-mode .score-last-change.loss { color: var(--danger-bright); }.app-score-mode .score-last-change.gain { color: var(--panel-accent-bright); }
+.app-score-mode .score-life-bar { height: 6px; margin-top: 4px; background: rgb(0 0 0 / .42); }
+.app-score-mode .score-life-bar i { box-shadow: none; }
+.app-score-mode .score-duelist-panel.p1 .score-life-bar i { background: linear-gradient(90deg, #A97723, var(--player-1-bright)); }
+.app-score-mode .score-duelist-panel.p2 .score-life-bar i { background: linear-gradient(90deg, #22647C, var(--player-2-bright)); }
+.app-score-mode .score-lp-section { gap: 7px; margin-top: 2px; }
+.app-score-mode .score-lp-section > span { color: var(--text-secondary); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.app-score-mode .score-lp-grid { gap: var(--space-2); }
+.app-score-mode .score-lp-action {
+  min-height: 46px;
+  height: 46px;
+  border-color: transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface-control);
+  box-shadow: inset 0 1px 0 var(--highlight-top);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.app-score-mode .score-lp-action.gain { background: var(--panel-soft); color: var(--panel-accent-bright); box-shadow: inset 0 0 0 1px var(--panel-border), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-lp-custom { min-height: 48px; height: 48px; margin-top: var(--space-1); border-color: var(--panel-border); border-radius: var(--radius-control); background: var(--panel-soft); color: var(--panel-accent-bright); box-shadow: inset 0 0 0 1px var(--panel-border); font-size: 13px; font-weight: 700; }
+.app-score-mode .score-lp-float { background: var(--surface-control); color: var(--text-primary); }.app-score-mode .score-lp-float.gain { background: var(--panel-accent); color: var(--bg-void); }
+.app-score-mode .score-impact-wave { border-color: var(--panel-accent); }
+
+.app-score-mode .score-balance { gap: var(--space-2); padding: 2px 4px; }
+.app-score-mode .score-balance-head { color: var(--text-secondary); font-size: 11px; font-weight: 500; }.app-score-mode .score-balance-head strong { color: var(--text-secondary); font-size: 11px; font-weight: 600; }
+.app-score-mode .score-balance-track { height: 5px; background: var(--player-2); }.app-score-mode .score-balance-p1 { background: var(--player-1); box-shadow: none; }.app-score-mode .score-balance-p2 { background: var(--player-2); box-shadow: none; }.app-score-mode .score-balance-track b { border-color: var(--bg-obsidian); background: var(--text-primary); }
+
+.app-score-mode .score-duel .duel-quick-actions { gap: var(--space-2); margin-top: var(--space-4); }
+.app-score-mode .score-duel .duel-quick-actions button { min-height: 52px; height: 52px; border-color: transparent; border-radius: var(--radius-action); background: var(--surface-raised); box-shadow: inset 0 1px 0 var(--highlight-top); color: var(--text-primary); font-size: 13px; font-weight: 700; }
+.app-score-mode .score-duel .duel-quick-actions button:last-child { background: var(--danger-soft); color: var(--danger-bright); }
+
+.app-score-mode .score-duel .duel-journal { padding: var(--space-3); border-color: var(--border-subtle); border-radius: var(--radius-panel); background: var(--surface-main); box-shadow: 0 18px 50px rgb(0 0 0 / .26), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-duel .journal-title { color: var(--text-primary); font-size: 13px; font-weight: 700; }.app-score-mode .score-duel .journal-title > .journal-count { background: var(--surface-control); color: var(--text-secondary); }.app-score-mode .score-duel .journal-add { min-height: 42px; border-radius: var(--radius-action); background: var(--surface-raised); color: var(--text-primary); box-shadow: inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .score-duel .journal-compact .journal-entry { margin-bottom: var(--space-2); padding: 10px; border-left: 2px solid var(--text-muted); border-radius: var(--radius-control); background: var(--surface-raised); }.app-score-mode .score-duel .journal-compact .journal-entry:has(.event-player.p1) { border-left-color: var(--player-1); }.app-score-mode .score-duel .journal-compact .journal-entry:has(.event-player.p2) { border-left-color: var(--player-2); }.app-score-mode .score-duel .event-player { background: transparent; color: var(--text-secondary); }.app-score-mode .score-duel .event-player.p1 { color: var(--player-1-bright); }.app-score-mode .score-duel .event-player.p2 { color: var(--player-2-bright); }.app-score-mode .score-duel .journal-entry small { color: var(--text-muted); }.app-score-mode .score-duel .journal-entry strong { color: var(--text-primary); }.app-score-mode .score-duel .empty { color: var(--text-secondary); font-size: 13px; }
+
+.app-score-mode .bottom-nav { width: min(calc(100% - 24px), 456px); min-height: 72px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); border-color: var(--border-subtle); border-radius: 22px; background: rgb(10 11 10 / .97); box-shadow: 0 18px 50px rgb(0 0 0 / .45), inset 0 1px 0 var(--highlight-top); }
+.app-score-mode .bottom-nav button { min-height: 54px; color: var(--text-muted); }.app-score-mode .bottom-nav button.active { color: var(--text-primary); }.app-score-mode .bottom-nav button.active::after { background: var(--score-active-accent); box-shadow: none; }.app-score-mode .bottom-nav span { font-size: 10px; font-weight: 600; }
+
+.app-score-mode .score-duel button { transition: transform 120ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.app-score-mode .score-duel button:hover { background: var(--surface-control-hover); }
+.app-score-mode .score-duel .score-lp-action.gain:hover,
+.app-score-mode .score-duel .score-lp-custom:hover { background: var(--panel-soft); }
+.app-score-mode .score-duel button:active { transform: scale(.97); }
+.app-score-mode .score-duel button:focus-visible,
+.app-score-mode .bottom-nav button:focus-visible { outline: 2px solid var(--score-active-accent); outline-offset: 2px; }
+.app-score-mode .score-duel button:disabled { cursor: not-allowed; opacity: .42; }
+
+@media (max-width: 380px) {
+  .app-score-mode .score-duel { padding-right: var(--space-3); padding-left: var(--space-3); }
+  .app-score-mode .score-duelist-panel { padding: 16px; }
+  .app-score-mode .score-lp-grid { gap: 6px; }
+  .app-score-mode .score-lp-action { font-size: 12px; }
+  .app-score-mode .score-timer { min-width: 84px; }
+}

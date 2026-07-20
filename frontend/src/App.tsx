@@ -39,10 +39,11 @@ export default function App() {
     loadDecks(decks.p1.cards, decks.p2.cards)
     setScreen('duel')
   }
+  const scoreTheme = screen === 'duel' && duelMode === 'score'
 
   if (editing) return <div className="app"><DeckBuilder deck={decks[editing]} player={editing === 'p1' ? 'Joueur 1' : 'Joueur 2'} onSave={saveDeck} onBack={() => setEditing(null)} /></div>
 
-  return <div className="app">
+  return <div className={`app ${scoreTheme ? `app-score-mode score-active-${duel.activePlayer}` : ''}`}>
     {screen === 'setup' && <SetupScreen decks={decks} duelMode={duelMode} onModeChange={setDuelMode} onEdit={setEditing} onStart={startComplete} onStartScore={startScore} />}
     {screen === 'duel' && <DuelScreen scoreMode={duelMode === 'score'} duel={duel} onNext={nextPhase} onEndTurn={endTurn} onSelectPhase={selectPhase} onToggleTimer={toggleTimer} onLp={changeLp} onMove={moveCard} onAddEvent={addEvent} onOpenLookup={() => setScreen('lookup')} onRematch={() => { if (duelMode === 'score') resetScoreDuel(); else loadDecks(decks.p1.cards, decks.p2.cards) }} onNewDuel={() => setScreen('setup')} />}
     {screen === 'lookup' && <LookupScreen />}
