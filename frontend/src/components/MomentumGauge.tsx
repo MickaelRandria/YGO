@@ -8,7 +8,7 @@ export function MomentumGauge({ p1, p2 }: { p1: number; p2: number }) {
   const style = { '--momentum-frontier': `${frontier}%` } as CSSProperties
 
   return <section className="momentum-gauge" aria-label={`Momentum du duel : ${label}`}>
-    <div className="momentum-track" style={style}><i className="momentum-j1" /><i className="momentum-j2" /><b aria-hidden="true" /></div>
+    <div className="momentum-track" style={style}><i className="momentum-j1" /><i className="momentum-j2" /><b aria-hidden="true">VS</b></div>
     <small>{label}</small>
   </section>
 }
